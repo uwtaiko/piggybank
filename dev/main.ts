@@ -124,10 +124,15 @@ export function setupTriggers() {
 }
 
 export function everyDay() { }
-export function everyWeek() { }
-export function everyMonth() {
-    createBackup();
+export function everyWeek() {
+    const today = new Date();
+
+    // Every other week
+    if (today.getDate() % 14 >= 7) {
+        createBackup();
+    }
 }
+export function everyMonth() { }
 
 export function tablesOnOpen() { }
 export function tablesOnEdit(e: EditEvent) {
@@ -165,7 +170,7 @@ export function tablesOnEdit(e: EditEvent) {
             break;
     }
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 
 export function viewsOnOpen() {
@@ -195,7 +200,7 @@ export function addExpenseOnFormSubmit() {
 
     addExpense(amountRes, desc, recipient, paymentType);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function addIncomeOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(AI_ID));
@@ -209,7 +214,7 @@ export function addIncomeOnFormSubmit() {
 
     addIncome(amountRes, desc, paymentType);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function addMemberIouOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(AMI_ID));
@@ -223,7 +228,7 @@ export function addMemberIouOnFormSubmit() {
 
     addMemberIOU(membersRes, amount, description);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function collectDuesOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(CD_ID));
@@ -235,7 +240,7 @@ export function collectDuesOnFormSubmit() {
 
     collectDues(memListRes, paymentTypeRes);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function confirmTransferOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(CT_ID));
@@ -245,12 +250,12 @@ export function confirmTransferOnFormSubmit() {
 
     confirmTransfer(statementList);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function nextQuarterOnFormSubmit() {
     nextQuarter();
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function resolveMemberIouOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(RMI_ID));
@@ -266,7 +271,7 @@ export function resolveMemberIouOnFormSubmit() {
 
     resolveMemberIOU(membersRes, amount, description, paymentType);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function takeAttendanceOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(TA_ID));
@@ -289,7 +294,7 @@ export function takeAttendanceOnFormSubmit() {
         takeAttendance(memListRes, newMemberRes);
     }
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function transferFundsOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(TF_ID));
@@ -313,7 +318,7 @@ export function transferFundsOnFormSubmit() {
 
     transferFunds(incomes, expenses);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function updateContactSettingsOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(UCS_ID));
@@ -406,7 +411,7 @@ export function updateContactSettingsOnFormSubmit() {
 
     updateContactSettings(name, email, phone, carrier, notifyPoll, sendReceipt);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 export function updateMemberStatusOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(UMS_ID));
@@ -455,7 +460,7 @@ export function updateMemberStatusOnFormSubmit() {
 
     updateMemberStatus(memberName, performingRes, activeRes, officerRes);
 
-    RefreshLogger.run();
+    RefreshLogger.refresh();
 }
 
 function initializeViews() {

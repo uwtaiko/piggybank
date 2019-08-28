@@ -1,6 +1,5 @@
 credentials.json
 build/appsscript.json
 build/bundle.js
-*/.clasp.json
 .token.pickle
 node_modules
