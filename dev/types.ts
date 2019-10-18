@@ -176,31 +176,31 @@ export class DataTable {
     static MEMBER = new DataTable('Member', [
         GeneratedTable.MEMBERS,
     ], [
-            GeneratedForm.ADD_MEMBER_IOU,
-            GeneratedForm.COLLECT_DUES,
-            GeneratedForm.RESOLVE_MEMBER_IOU,
-            GeneratedForm.TAKE_ATTENDANCE,
-            GeneratedForm.UPDATE_CONTACT_SETTINGS,
-            GeneratedForm.UPDATE_MEMBER_STATUS
-        ]);
+        GeneratedForm.ADD_MEMBER_IOU,
+        GeneratedForm.COLLECT_DUES,
+        GeneratedForm.RESOLVE_MEMBER_IOU,
+        GeneratedForm.TAKE_ATTENDANCE,
+        GeneratedForm.UPDATE_CONTACT_SETTINGS,
+        GeneratedForm.UPDATE_MEMBER_STATUS
+    ]);
     static INCOME = new DataTable('Income', [
         GeneratedTable.ACCOUNT_INFO,
         GeneratedTable.INCOMES,
         GeneratedTable.ALL_TRANSACTIONS,
         GeneratedTable.STATEMENTS
     ], [
-            GeneratedForm.CONFIRM_TRANSFER,
-            GeneratedForm.TRANSFER_FUNDS
-        ]);
+        GeneratedForm.CONFIRM_TRANSFER,
+        GeneratedForm.TRANSFER_FUNDS
+    ]);
     static EXPENSE = new DataTable('Expense', [
         GeneratedTable.ACCOUNT_INFO,
         GeneratedTable.EXPENSES,
         GeneratedTable.ALL_TRANSACTIONS,
         GeneratedTable.STATEMENTS
     ], [
-            GeneratedForm.CONFIRM_TRANSFER,
-            GeneratedForm.TRANSFER_FUNDS
-        ]);
+        GeneratedForm.CONFIRM_TRANSFER,
+        GeneratedForm.TRANSFER_FUNDS
+    ]);
     static RECIPIENT = new DataTable('Recipient', [
         GeneratedTable.EXPENSES,
         GeneratedTable.ALL_TRANSACTIONS
@@ -212,19 +212,19 @@ export class DataTable {
         GeneratedTable.ALL_TRANSACTIONS,
         GeneratedTable.STATEMENTS
     ], [
-            GeneratedForm.ADD_EXPENSE,
-            GeneratedForm.ADD_INCOME,
-            GeneratedForm.COLLECT_DUES,
-            GeneratedForm.CONFIRM_TRANSFER,
-            GeneratedForm.RESOLVE_MEMBER_IOU,
-            GeneratedForm.TRANSFER_FUNDS
-        ]);
+        GeneratedForm.ADD_EXPENSE,
+        GeneratedForm.ADD_INCOME,
+        GeneratedForm.COLLECT_DUES,
+        GeneratedForm.CONFIRM_TRANSFER,
+        GeneratedForm.RESOLVE_MEMBER_IOU,
+        GeneratedForm.TRANSFER_FUNDS
+    ]);
     static STATEMENT = new DataTable('Statement', [
         GeneratedTable.STATEMENTS
     ], [
-            GeneratedForm.CONFIRM_TRANSFER,
-            GeneratedForm.TRANSFER_FUNDS
-        ]);
+        GeneratedForm.CONFIRM_TRANSFER,
+        GeneratedForm.TRANSFER_FUNDS
+    ]);
     static ATTENDANCE = new DataTable('Attendance', [
         GeneratedTable.MEMBERS
     ], []);
@@ -232,9 +232,9 @@ export class DataTable {
         GeneratedTable.ACCOUNT_INFO,
         GeneratedTable.MEMBERS
     ], [
-            GeneratedForm.COLLECT_DUES,
-            GeneratedForm.NEXT_QUARTER
-        ]);
+        GeneratedForm.COLLECT_DUES,
+        GeneratedForm.NEXT_QUARTER
+    ]);
 
     private constructor(private name: string, private dependentTables: GeneratedTable[], private dependentForms: GeneratedForm[]) { }
 
@@ -251,6 +251,12 @@ export abstract class RefreshLogger {
     /** The tables that have been updated */
     static tables: UniqueList<DataTable> = new UniqueList<DataTable>();
 
+    /** The form to be updated first (recently submitted) */
+    static priorityForm: GeneratedForm | null = null;
+
+    /** Hides constructor */
+    private constructor() { }
+
     /**
      * Marks the given table as having changed, meaning the dependent
      * structures will update when refreshed.
@@ -260,6 +266,17 @@ export abstract class RefreshLogger {
     static markAsUpdated(table: DataTable) {
         this.tables.add(table);
     }
+
+    /**
+     * Marks the given form as a priority. This form will be disabled and
+     * repopulated before all other forms and views.
+     * 
+     * @param form The form to mark as a priority
+     */
+    static markAsPriority(form: GeneratedForm) {
+        this.priorityForm = form;
+    }
+
     /**
      * Refresh all of the generated structures dependent on the marked tables.
      */
@@ -271,21 +288,34 @@ export abstract class RefreshLogger {
         });
 
         const lock = LockService.getScriptLock();
-        lock.waitLock(5 * 60 * 1000) // five minutes
+        lock.tryLock(2 * 60 * 1000) // two minutes
+        if (!lock.hasLock()) {
+            // @ts-ignore Unable to find "console.log"
+            console.log('Refresh cancelled, unable to get Lock.');
+            return;
+        }
 
         try {
-            forms.asArray().forEach(form => disableForm(form));
+            let formsList = forms.asArray();
+            if (this.priorityForm !== null) {
+                this.priorityForm.getRefreshFn()();
+
+                formsList = formsList.filter(form => form !== this.priorityForm);
+            }
+
+            formsList.forEach(form => disableForm(form));
 
             this.tables.asArray().forEach(table => {
                 table.getDependentTables().forEach(x => x.getRefreshFn()());
             });
-            this.tables.asArray().forEach(table => {
-                table.getDependentForms().forEach(x => x.getRefreshFn()());
-            });
+            formsList.forEach(x => x.getRefreshFn()());
         } catch (e) {
             forms.asArray().forEach(form => enableForm(form));
             throw e;
         }
+
+        this.tables = new UniqueList<DataTable>();
+        this.priorityForm = null;
 
         lock.releaseLock();
     }

@@ -17,6 +17,7 @@ import { AttendanceEntry, BooleanData, DataTable, DateData, ErrorType, ExpenseEn
  * @param currentDuesPaid The currentDuesPaid values to update with
  * @param notifyPoll The notifyPoll values to update with
  * @param sendReceipt The sendReceipt values to update with
+ * @param sheetId The id of the spreadsheet to operate on
  * 
  * @throws IllegalArgumentError if not all parameters are the same length
  * @throws NoMatchFoundError if an id is not found in the sheet
@@ -32,9 +33,12 @@ export function updateMember(
     officer?: BooleanData[],
     currentDuesPaid?: BooleanData[],
     notifyPoll?: BooleanData[],
-    sendReceipt?: BooleanData[]
+    sendReceipt?: BooleanData[],
+    sheetId?: string
 ) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('Member');
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
+        SpreadsheetApp.openById(ID).getSheetByName('Member');
 
     // Check that all arrays are the same length if given
     let numEntries = id.length;
@@ -54,7 +58,8 @@ export function updateMember(
     }
 
     const indicies = getIndicesFromIds(sheet, id);
-    const sheetVals = selectAll(sheet).filter((_, i) => indicies.indexOf(i) !== -1);
+    const allSheetVals = selectAll(sheet);
+    const sheetVals = indicies.map(i => allSheetVals[i]);
 
     if (!name) name = sheetVals.map(row => StringData.create(row[1].toString()));
     if (!dateJoined) dateJoined = sheetVals.map(row => DateData.create(row[2].toString()));
@@ -104,6 +109,7 @@ export function updateMember(
  * @param description The description values to update with
  * @param paymentTypeId The paymentTypeId values to update with
  * @param statementId The statementId values to update with
+ * @param sheetId The id of the spreadsheet to operate on
  * 
  * @throws IllegalArgumentError if not all parameters are the same length
  * @throws NoMatchFoundError if an id is not found in the sheet
@@ -114,9 +120,12 @@ export function updateIncome(
     amount?: IntData[],
     description?: StringData[],
     paymentTypeId?: IntData[],
-    statementId?: IntData[]
+    statementId?: IntData[],
+    sheetId?: string
 ) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('Income');
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
+        SpreadsheetApp.openById(ID).getSheetByName('Income');
 
     // Check that all arrays are the same length if given
     let numEntries = id.length;
@@ -131,7 +140,8 @@ export function updateIncome(
     }
 
     const indicies = getIndicesFromIds(sheet, id);
-    const sheetVals = selectAll(sheet).filter((_, i) => indicies.indexOf(i) !== -1);
+    const allSheetVals = selectAll(sheet);
+    const sheetVals = indicies.map(i => allSheetVals[i]);
 
     if (!date) date = sheetVals.map(row => DateData.create(row[1].toString()));
     if (!amount) amount = sheetVals.map(row => IntData.create(row[2].toString()));
@@ -171,6 +181,7 @@ export function updateIncome(
  * @param paymentTypeId The paymentTypeId values to update with
  * @param recipientId The recipientId values to update with
  * @param statementId The statementId values to update with
+ * @param sheetId The id of the spreadsheet to operate on
  * 
  * @throws IllegalArgumentError if not all parameters are the same length
  * @throws NoMatchFoundError if an id is not found in the sheet
@@ -182,9 +193,12 @@ export function updateExpense(
     description?: StringData[],
     paymentTypeId?: IntData[],
     recipientId?: IntData[],
-    statementId?: IntData[]
+    statementId?: IntData[],
+    sheetId?: string
 ) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('Expense');
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
+        SpreadsheetApp.openById(ID).getSheetByName('Expense');
 
     // Check that all arrays are the same length if given
     let numEntries = id.length;
@@ -200,7 +214,8 @@ export function updateExpense(
     }
 
     const indicies = getIndicesFromIds(sheet, id);
-    const sheetVals = selectAll(sheet).filter((_, i) => indicies.indexOf(i) !== -1);
+    const allSheetVals = selectAll(sheet);
+    const sheetVals = indicies.map(i => allSheetVals[i]);
 
     if (!date) date = sheetVals.map(row => DateData.create(row[1].toString()));
     if (!amount) amount = sheetVals.map(row => IntData.create(row[2].toString()));
@@ -238,12 +253,15 @@ export function updateExpense(
  * 
  * @param id The ids to use to find the matching rows in the sheet
  * @param name The name values to update with
+ * @param sheetId The id of the spreadsheet to operate on
  * 
  * @throws IllegalArgumentError if not all parameters are the same length
  * @throws NoMatchFoundError if an id is not found in the sheet
  */
-export function updateRecipient(id: IntData[], name: StringData[]) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('Recipient');
+export function updateRecipient(id: IntData[], name: StringData[], sheetId?: string) {
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
+        SpreadsheetApp.openById(ID).getSheetByName('Recipient');
 
     // Check that all arrays are the same length if given
     let numEntries = id.length;
@@ -266,12 +284,15 @@ export function updateRecipient(id: IntData[], name: StringData[]) {
  * 
  * @param id The ids to use to find the matching rows in the sheet
  * @param name The name values to update with
+ * @param sheetId The id of the spreadsheet to operate on
  * 
  * @throws IllegalArgumentError if not all parameters are the same length
  * @throws NoMatchFoundError if an id is not found in the sheet
  */
-export function updatePaymentType(id: IntData[], name: StringData[]) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('PaymentType');
+export function updatePaymentType(id: IntData[], name: StringData[], sheetId?: string) {
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
+        SpreadsheetApp.openById(ID).getSheetByName('PaymentType');
 
     // Check that all arrays are the same length if given
     let numEntries = id.length;
@@ -295,6 +316,7 @@ export function updatePaymentType(id: IntData[], name: StringData[]) {
  * @param id The ids to use to find the matching rows in the sheet
  * @param date The date values to update with
  * @param confirmed The confirmed values to update with
+ * @param sheetId The id of the spreadsheet to operate on
  * 
  * @throws IllegalArgumentError if not all parameters are the same length
  * @throws NoMatchFoundError if an id is not found in the sheet
@@ -302,9 +324,12 @@ export function updatePaymentType(id: IntData[], name: StringData[]) {
 export function updateStatement(
     id: IntData[],
     date?: DateData[],
-    confirmed?: BooleanData[]
+    confirmed?: BooleanData[],
+    sheetId?: string
 ) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('Statement');
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
+        SpreadsheetApp.openById(ID).getSheetByName('Statement');
 
     // Check that all arrays are the same length if given
     let numEntries = id.length;
@@ -316,7 +341,8 @@ export function updateStatement(
     }
 
     const indicies = getIndicesFromIds(sheet, id);
-    const sheetVals = selectAll(sheet).filter((_, i) => indicies.indexOf(i) !== -1);
+    const allSheetVals = selectAll(sheet);
+    const sheetVals = indicies.map(i => allSheetVals[i]);
 
     if (!date) date = sheetVals.map(row => DateData.create(row[1].toString()));
     if (!confirmed)
@@ -345,6 +371,7 @@ export function updateStatement(
  * @param date The date values to update with
  * @param memberIds The memberIds values to update with
  * @param quarterId The quarterId values to update with
+ * @param sheetId The id of the spreadsheet to operate on
  * 
  * @throws IllegalArgumentError if not all parameters are the same length
  * @throws NoMatchFoundError if an id is not found in the sheet
@@ -353,9 +380,12 @@ export function updateAttendance(
     id: IntData[],
     date?: DateData[],
     memberIds?: IntListData[],
-    quarterId?: QuarterData[]
+    quarterId?: QuarterData[],
+    sheetId?: string
 ) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('Attendance');
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
+        SpreadsheetApp.openById(ID).getSheetByName('Attendance');
 
     // Check that all arrays are the same length if given
     let numEntries = id.length;
@@ -368,7 +398,8 @@ export function updateAttendance(
     }
 
     const indicies = getIndicesFromIds(sheet, id);
-    const sheetVals = selectAll(sheet).filter((_, i) => indicies.indexOf(i) !== -1);
+    const allSheetVals = selectAll(sheet);
+    const sheetVals = indicies.map(i => allSheetVals[i]);
 
     if (!date) date = sheetVals.map(row => DateData.create(row[1].toString()));
     if (!memberIds)
@@ -394,14 +425,18 @@ export function updateAttendance(
  * @param officerFee The officerFee value to update with
  * @param daysUntilFeeRequired The daysUntilFeeRequired value to update with
  * @param currentQuarterId The currentQuarterId value to update with
+ * @param sheetId The id of the spreadsheet to operate on
  */
 export function updateClubInfo(
     memberFee?: IntData,
     officerFee?: IntData,
     daysUntilFeeRequired?: IntData,
-    currentQuarterId?: QuarterData
+    currentQuarterId?: QuarterData,
+    sheetId?: string
 ) {
-    const sheet = SpreadsheetApp.openById(ID).getSheetByName('ClubInfo');
+    const sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('ClubInfo') :
+        SpreadsheetApp.openById(ID).getSheetByName('ClubInfo');
     const sheetVals = selectAll(sheet)[0];
 
     if (!memberFee) memberFee = IntData.create(sheetVals[0].toString());
