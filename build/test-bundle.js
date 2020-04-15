@@ -126,8 +126,8 @@ var __spread = (this && this.__spread) || function () {
 };
 exports.__esModule = true;
 var disable_1 = __webpack_require__(4);
-var refresh_1 = __webpack_require__(20);
-var refresh_2 = __webpack_require__(21);
+var refresh_1 = __webpack_require__(21);
+var refresh_2 = __webpack_require__(22);
 var ErrorType = (function () {
     function ErrorType() {
     }
@@ -1644,6 +1644,244 @@ exports.appendAttendance = appendAttendance;
 
 "use strict";
 
+exports.__esModule = true;
+var tablesId_1 = __webpack_require__(3);
+var tableOps_1 = __webpack_require__(1);
+var types_1 = __webpack_require__(0);
+function updateMember(id, name, dateJoined, amountOwed, email, performing, active, officer, currentDuesPaid, notifyPoll, sendReceipt, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Member');
+    var numEntries = id.length;
+    if ((name && name.length !== numEntries) ||
+        (dateJoined && dateJoined.length !== numEntries) ||
+        (amountOwed && amountOwed.length !== numEntries) ||
+        (email && email.length !== numEntries) ||
+        (performing && performing.length !== numEntries) ||
+        (active && active.length !== numEntries) ||
+        (officer && officer.length !== numEntries) ||
+        (currentDuesPaid && currentDuesPaid.length !== numEntries) ||
+        (notifyPoll && notifyPoll.length !== numEntries) ||
+        (sendReceipt && sendReceipt.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!name)
+        name = sheetVals.map(function (row) { return types_1.StringData.create(row[1].toString()); });
+    if (!dateJoined)
+        dateJoined = sheetVals.map(function (row) { return types_1.DateData.create(row[2].toString()); });
+    if (!amountOwed)
+        amountOwed = sheetVals.map(function (row) { return types_1.IntData.create(row[3].toString()); });
+    if (!email)
+        email = sheetVals.map(function (row) { return types_1.StringData.create(row[4].toString()); });
+    if (!performing)
+        performing = sheetVals.map(function (row) { return types_1.BooleanData.create(row[5].toString()); });
+    if (!active)
+        active = sheetVals.map(function (row) { return types_1.BooleanData.create(row[6].toString()); });
+    if (!officer)
+        officer = sheetVals.map(function (row) { return types_1.BooleanData.create(row[7].toString()); });
+    if (!currentDuesPaid)
+        currentDuesPaid = sheetVals.map(function (row) { return types_1.BooleanData.create(row[8].toString()); });
+    if (!notifyPoll)
+        notifyPoll = sheetVals.map(function (row) { return types_1.BooleanData.create(row[9].toString()); });
+    if (!sendReceipt)
+        sendReceipt = sheetVals.map(function (row) { return types_1.BooleanData.create(row[10].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.MemberEntry(id[i], name[i], dateJoined[i], amountOwed[i], email[i], performing[i], active[i], officer[i], currentDuesPaid[i], notifyPoll[i], sendReceipt[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.MEMBER);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateMember = updateMember;
+function updateIncome(id, date, amount, description, paymentTypeId, statementId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Income');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (amount && amount.length !== numEntries) ||
+        (description && description.length !== numEntries) ||
+        (paymentTypeId && paymentTypeId.length !== numEntries) ||
+        (statementId && statementId.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!amount)
+        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
+    if (!description)
+        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
+    if (!paymentTypeId)
+        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
+    if (!statementId)
+        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.IncomeEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], statementId[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.INCOME);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateIncome = updateIncome;
+function updateExpense(id, date, amount, description, paymentTypeId, recipientId, statementId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Expense');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (amount && amount.length !== numEntries) ||
+        (description && description.length !== numEntries) ||
+        (paymentTypeId && paymentTypeId.length !== numEntries) ||
+        (recipientId && recipientId.length !== numEntries) ||
+        (statementId && statementId.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!amount)
+        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
+    if (!description)
+        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
+    if (!paymentTypeId)
+        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
+    if (!recipientId)
+        recipientId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
+    if (!statementId)
+        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[6].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.ExpenseEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], recipientId[i], statementId[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.EXPENSE);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateExpense = updateExpense;
+function updateRecipient(id, name, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Recipient');
+    var numEntries = id.length;
+    if (name && name.length !== numEntries) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.RecipientEntry(id[i], name[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.RECIPIENT);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateRecipient = updateRecipient;
+function updatePaymentType(id, name, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('PaymentType');
+    var numEntries = id.length;
+    if (name && name.length !== numEntries) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.PaymentTypeEntry(id[i], name[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.PAYMENT_TYPE);
+    tableOps_1.update(sheet, entries);
+}
+exports.updatePaymentType = updatePaymentType;
+function updateStatement(id, date, confirmed, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Statement');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (confirmed && confirmed.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!confirmed)
+        confirmed = sheetVals.map(function (row) { return types_1.BooleanData.create(row[2].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.StatementEntry(id[i], date[i], confirmed[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.STATEMENT);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateStatement = updateStatement;
+function updateAttendance(id, date, memberIds, quarterId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Attendance');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (memberIds && memberIds.length !== numEntries) ||
+        (quarterId && quarterId.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!memberIds)
+        memberIds = sheetVals.map(function (row) { return types_1.IntListData.create(row[2].toString()); });
+    if (!quarterId)
+        quarterId = sheetVals.map(function (row) { return types_1.QuarterData.create(row[3].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.AttendanceEntry(id[i], date[i], memberIds[i], quarterId[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.ATTENDANCE);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateAttendance = updateAttendance;
+function updateClubInfo(memberFee, officerFee, daysUntilFeeRequired, currentQuarterId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('ClubInfo') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('ClubInfo');
+    var sheetVals = tableOps_1.selectAll(sheet)[0];
+    if (!memberFee)
+        memberFee = types_1.IntData.create(sheetVals[0].toString());
+    if (!officerFee)
+        officerFee = types_1.IntData.create(sheetVals[1].toString());
+    if (!daysUntilFeeRequired)
+        daysUntilFeeRequired = types_1.IntData.create(sheetVals[2].toString());
+    if (!currentQuarterId)
+        currentQuarterId = types_1.QuarterData.create(sheetVals[3].toString());
+    sheet
+        .getRange(0 + tableOps_1.HEADER_LEN + tableOps_1.GAS_OFFSET, 1, 1, sheetVals.length)
+        .setValues([
+        [
+            memberFee.toString(),
+            officerFee.toString(),
+            daysUntilFeeRequired.toString(),
+            currentQuarterId.toString(),
+        ],
+    ]);
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.CLUB_INFO);
+}
+exports.updateClubInfo = updateClubInfo;
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
     if (m) return m.call(o);
@@ -1655,7 +1893,7 @@ var __values = (this && this.__values) || function (o) {
     };
 };
 exports.__esModule = true;
-var projectInfo_1 = __webpack_require__(19);
+var projectInfo_1 = __webpack_require__(20);
 var get_1 = __webpack_require__(2);
 var types_1 = __webpack_require__(0);
 function sendEmails(emails, subject, body) {
@@ -1734,9 +1972,9 @@ function emailIOUNotification(memberNames, amount, description) {
     sendEmails(emails, "IOU for " + projectInfo_1.GROUP_NAME, "This is confirming that you owe $" + amount + " to " + projectInfo_1.GROUP_NAME + " for '" + description + "'.");
 }
 exports.emailIOUNotification = emailIOUNotification;
-function emailPollNotification(pollName, deadline, link) {
+function emailPollNotification(pollName, deadline, link, sheetId) {
     var e_3, _a;
-    var members = get_1.getMembers();
+    var members = get_1.getMembers(sheetId);
     var emails = [];
     try {
         for (var members_1 = __values(members), members_1_1 = members_1.next(); !members_1_1.done; members_1_1 = members_1.next()) {
@@ -1829,10 +2067,44 @@ function emailPollNotification(pollName, deadline, link) {
     sendEmails(emails, projectInfo_1.GROUP_NAME + " Performance Poll", "Please respond to the " + pollName + " poll before " + weekday + ", " + month + " " + date + " at " + hours + ":" + mins + " " + ampm + ".\nLink: " + link);
 }
 exports.emailPollNotification = emailPollNotification;
+function emailMembers(memberList, subject, body, sheetId) {
+    var e_4, _a;
+    var members = get_1.getMembers(sheetId);
+    var emails = [];
+    var startIndex = 0;
+    try {
+        for (var memberList_1 = __values(memberList), memberList_1_1 = memberList_1.next(); !memberList_1_1.done; memberList_1_1 = memberList_1.next()) {
+            var name = memberList_1_1.value;
+            var i = startIndex;
+            do {
+                var curName = members[i].name;
+                var curEmail = members[i].email;
+                if (!curName || !curEmail) {
+                    throw types_1.ErrorType.AssertionError;
+                }
+                else if (curName.getValue() === name.getValue()) {
+                    emails.push(curEmail.getValue());
+                    startIndex = i;
+                    break;
+                }
+                i = (i + 1) % members.length;
+            } while (i !== startIndex);
+        }
+    }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+    finally {
+        try {
+            if (memberList_1_1 && !memberList_1_1.done && (_a = memberList_1["return"])) _a.call(memberList_1);
+        }
+        finally { if (e_4) throw e_4.error; }
+    }
+    emails.map(function (email) { return GmailApp.sendEmail(email, subject, body); });
+}
+exports.emailMembers = emailMembers;
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1847,7 +2119,7 @@ exports.NUM_ATTNS = '';
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2356,7 +2628,7 @@ exports.refreshUpdateMemberStatus = refreshUpdateMemberStatus;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2921,7 +3193,7 @@ exports.refreshStatements = refreshStatements;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2930,236 +3202,73 @@ exports.__esModule = true;
 var tablesId_1 = __webpack_require__(3);
 var tableOps_1 = __webpack_require__(1);
 var types_1 = __webpack_require__(0);
-function updateMember(id, name, dateJoined, amountOwed, email, performing, active, officer, currentDuesPaid, notifyPoll, sendReceipt, sheetId) {
+function removeMember(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Member');
-    var numEntries = id.length;
-    if ((name && name.length !== numEntries) ||
-        (dateJoined && dateJoined.length !== numEntries) ||
-        (amountOwed && amountOwed.length !== numEntries) ||
-        (email && email.length !== numEntries) ||
-        (performing && performing.length !== numEntries) ||
-        (active && active.length !== numEntries) ||
-        (officer && officer.length !== numEntries) ||
-        (currentDuesPaid && currentDuesPaid.length !== numEntries) ||
-        (notifyPoll && notifyPoll.length !== numEntries) ||
-        (sendReceipt && sendReceipt.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!name)
-        name = sheetVals.map(function (row) { return types_1.StringData.create(row[1].toString()); });
-    if (!dateJoined)
-        dateJoined = sheetVals.map(function (row) { return types_1.DateData.create(row[2].toString()); });
-    if (!amountOwed)
-        amountOwed = sheetVals.map(function (row) { return types_1.IntData.create(row[3].toString()); });
-    if (!email)
-        email = sheetVals.map(function (row) { return types_1.StringData.create(row[4].toString()); });
-    if (!performing)
-        performing = sheetVals.map(function (row) { return types_1.BooleanData.create(row[5].toString()); });
-    if (!active)
-        active = sheetVals.map(function (row) { return types_1.BooleanData.create(row[6].toString()); });
-    if (!officer)
-        officer = sheetVals.map(function (row) { return types_1.BooleanData.create(row[7].toString()); });
-    if (!currentDuesPaid)
-        currentDuesPaid = sheetVals.map(function (row) { return types_1.BooleanData.create(row[8].toString()); });
-    if (!notifyPoll)
-        notifyPoll = sheetVals.map(function (row) { return types_1.BooleanData.create(row[9].toString()); });
-    if (!sendReceipt)
-        sendReceipt = sheetVals.map(function (row) { return types_1.BooleanData.create(row[10].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.MemberEntry(id[i], name[i], dateJoined[i], amountOwed[i], email[i], performing[i], active[i], officer[i], currentDuesPaid[i], notifyPoll[i], sendReceipt[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.MemberEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.MEMBER);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateMember = updateMember;
-function updateIncome(id, date, amount, description, paymentTypeId, statementId, sheetId) {
+exports.removeMember = removeMember;
+function removeIncome(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Income');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (amount && amount.length !== numEntries) ||
-        (description && description.length !== numEntries) ||
-        (paymentTypeId && paymentTypeId.length !== numEntries) ||
-        (statementId && statementId.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!amount)
-        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
-    if (!description)
-        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
-    if (!paymentTypeId)
-        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
-    if (!statementId)
-        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.IncomeEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], statementId[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.IncomeEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.INCOME);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateIncome = updateIncome;
-function updateExpense(id, date, amount, description, paymentTypeId, recipientId, statementId, sheetId) {
+exports.removeIncome = removeIncome;
+function removeExpense(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Expense');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (amount && amount.length !== numEntries) ||
-        (description && description.length !== numEntries) ||
-        (paymentTypeId && paymentTypeId.length !== numEntries) ||
-        (recipientId && recipientId.length !== numEntries) ||
-        (statementId && statementId.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!amount)
-        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
-    if (!description)
-        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
-    if (!paymentTypeId)
-        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
-    if (!recipientId)
-        recipientId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
-    if (!statementId)
-        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[6].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.ExpenseEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], recipientId[i], statementId[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.ExpenseEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.EXPENSE);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateExpense = updateExpense;
-function updateRecipient(id, name, sheetId) {
+exports.removeExpense = removeExpense;
+function removeRecipient(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Recipient');
-    var numEntries = id.length;
-    if (name && name.length !== numEntries) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.RecipientEntry(id[i], name[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.RecipientEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.RECIPIENT);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateRecipient = updateRecipient;
-function updatePaymentType(id, name, sheetId) {
+exports.removeRecipient = removeRecipient;
+function removePaymentType(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('PaymentType');
-    var numEntries = id.length;
-    if (name && name.length !== numEntries) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.PaymentTypeEntry(id[i], name[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.PaymentTypeEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.PAYMENT_TYPE);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updatePaymentType = updatePaymentType;
-function updateStatement(id, date, confirmed, sheetId) {
+exports.removePaymentType = removePaymentType;
+function removeStatement(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Statement');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (confirmed && confirmed.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!confirmed)
-        confirmed = sheetVals.map(function (row) { return types_1.BooleanData.create(row[4].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.StatementEntry(id[i], date[i], confirmed[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.STATEMENT);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateStatement = updateStatement;
-function updateAttendance(id, date, memberIds, quarterId, sheetId) {
+exports.removeStatement = removeStatement;
+function removeAttendance(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Attendance');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (memberIds && memberIds.length !== numEntries) ||
-        (quarterId && quarterId.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!memberIds)
-        memberIds = sheetVals.map(function (row) { return types_1.IntListData.create(row[2].toString()); });
-    if (!quarterId)
-        quarterId = sheetVals.map(function (row) { return types_1.QuarterData.create(row[3].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.AttendanceEntry(id[i], date[i], memberIds[i], quarterId[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.ATTENDANCE);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateAttendance = updateAttendance;
-function updateClubInfo(memberFee, officerFee, daysUntilFeeRequired, currentQuarterId, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('ClubInfo') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('ClubInfo');
-    var sheetVals = tableOps_1.selectAll(sheet)[0];
-    if (!memberFee)
-        memberFee = types_1.IntData.create(sheetVals[0].toString());
-    if (!officerFee)
-        officerFee = types_1.IntData.create(sheetVals[1].toString());
-    if (!daysUntilFeeRequired)
-        daysUntilFeeRequired = types_1.IntData.create(sheetVals[2].toString());
-    if (!currentQuarterId)
-        currentQuarterId = types_1.QuarterData.create(sheetVals[3].toString());
-    sheet
-        .getRange(0 + tableOps_1.HEADER_LEN + tableOps_1.GAS_OFFSET, 1, 1, sheetVals.length)
-        .setValues([
-        [
-            memberFee.toString(),
-            officerFee.toString(),
-            daysUntilFeeRequired.toString(),
-            currentQuarterId.toString(),
-        ],
-    ]);
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.CLUB_INFO);
-}
-exports.updateClubInfo = updateClubInfo;
+exports.removeAttendance = removeAttendance;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3175,10 +3284,10 @@ var __values = (this && this.__values) || function (o) {
     };
 };
 exports.__esModule = true;
-var email_1 = __webpack_require__(18);
+var email_1 = __webpack_require__(19);
 var append_1 = __webpack_require__(17);
 var get_1 = __webpack_require__(2);
-var update_1 = __webpack_require__(22);
+var update_1 = __webpack_require__(18);
 var types_1 = __webpack_require__(0);
 function getAmountOwed(memberNames, sheetId) {
     var e_1, _a;
@@ -3518,8 +3627,514 @@ exports.updateMemberStatus = updateMemberStatus;
 
 
 /***/ }),
-/* 24 */,
-/* 25 */,
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+exports.__esModule = true;
+var email_1 = __webpack_require__(19);
+var viewsId_1 = __webpack_require__(16);
+var append_1 = __webpack_require__(17);
+var get_1 = __webpack_require__(2);
+var remove_1 = __webpack_require__(23);
+var update_1 = __webpack_require__(18);
+var types_1 = __webpack_require__(0);
+function menuAddMember(name, dateJoined, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var nameData = new types_1.StringData(name.toLowerCase());
+    var date = types_1.DateData.create(dateJoined);
+    try {
+        get_1.getMemberIds([nameData], sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('Name is already in use', 'Adding Failed', 5);
+        }
+        else {
+            throw 'Name is already in use';
+        }
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            append_1.appendMember([nameData], [date], [new types_1.IntData(0)], [new types_1.StringData('')], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], sheetId);
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("Added Member", 'Success', 5);
+            }
+            types_1.RefreshLogger.refresh();
+        }
+        else {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast('Check error log for details', 'Adding Failed', 5);
+            }
+            throw e;
+        }
+    }
+}
+exports.menuAddMember = menuAddMember;
+function menuAddAttendance(date, members, quarter, year, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var dateAsData = types_1.DateData.create(date);
+        var memberIds = void 0;
+        if (members === '') {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("No members listed; attendance not added", 'No Action Taken', 5);
+            }
+            return;
+        }
+        else {
+            memberIds = new types_1.IntListData(members
+                .split(',')
+                .map(function (s) { return new types_1.IntData(parseInt(s)); })
+                .sort(function (a, b) { return a.getValue() - b.getValue(); }));
+        }
+        var quarterVal = void 0;
+        switch (quarter) {
+            case 'Winter':
+                quarterVal = types_1.Quarter.WINTER;
+                break;
+            case 'Spring':
+                quarterVal = types_1.Quarter.SPRING;
+                break;
+            case 'Summer':
+                quarterVal = types_1.Quarter.SUMMER;
+                break;
+            case 'Fall':
+                quarterVal = types_1.Quarter.FALL;
+                break;
+            default:
+                throw types_1.ErrorType.IllegalArgumentError;
+        }
+        var quarterId = new types_1.QuarterData(quarterVal, types_1.IntData.create(year));
+        append_1.appendAttendance([dateAsData], [memberIds], [quarterId], sheetId);
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new attendance record", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddAttendance = menuAddAttendance;
+function menuAddIncome(date, amount, description, payType, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var payId = get_1.getPaymentTypeIds([new types_1.StringData(payType.toLowerCase())], sheetId)[0];
+        var amountVal = parseFloat(amount);
+        if (isNaN(amountVal))
+            throw types_1.ErrorType.IllegalArgumentError;
+        append_1.appendIncome([types_1.DateData.create(date)], [new types_1.IntData(Math.round(amountVal * 100))], [types_1.StringData.create(description)], [payId], [new types_1.IntData(-1)], sheetId);
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new income", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddIncome = menuAddIncome;
+function menuAddExpense(date, amount, description, recipient, payType, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var payId = get_1.getPaymentTypeIds([new types_1.StringData(payType.toLowerCase())], sheetId)[0];
+        var amountVal = parseFloat(amount);
+        if (isNaN(amountVal))
+            throw types_1.ErrorType.IllegalArgumentError;
+        var recipientData = new types_1.StringData(recipient.toLowerCase());
+        var recipientId = void 0;
+        try {
+            recipientId = get_1.getRecipientIds([recipientData], sheetId)[0];
+        }
+        catch (e) {
+            if (e === types_1.ErrorType.NoMatchFoundError) {
+                recipientId = append_1.appendRecipient([recipientData], sheetId)[0];
+            }
+            else {
+                throw e;
+            }
+        }
+        append_1.appendExpense([types_1.DateData.create(date)], [new types_1.IntData(Math.round(amountVal * 100))], [types_1.StringData.create(description)], [payId], [recipientId], [new types_1.IntData(-1)], sheetId);
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new expense", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddExpense = menuAddExpense;
+function menuAddStatement(date, incomes, expenses, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        if (incomes.length === 0 && expenses.length === 0) {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("No incomes or expenses were specified", 'No Change', 5);
+            }
+            return;
+        }
+        var statementId = append_1.appendStatement([types_1.DateData.create(date)], [types_1.BooleanData.FALSE], sheetId)[0];
+        if (incomes.length > 0) {
+            var incomeIds = incomes.split('\n').map(types_1.IntData.create);
+            update_1.updateIncome(incomeIds, undefined, undefined, undefined, undefined, types_1.repeat(statementId, incomeIds.length), sheetId);
+        }
+        if (expenses.length > 0) {
+            var expenseIds = expenses.split('\n').map(types_1.IntData.create);
+            update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, undefined, types_1.repeat(statementId, expenseIds.length), sheetId);
+        }
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new statement", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddStatement = menuAddStatement;
+function menuAddPayType(name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var nameData = types_1.StringData.create(name.toLowerCase());
+        try {
+            get_1.getPaymentTypeIds([nameData], sheetId);
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("Payment type already exists", 'Failed', 5);
+            }
+            return;
+        }
+        catch (e) {
+            if (e === types_1.ErrorType.NoMatchFoundError) {
+                append_1.appendPaymentType([nameData], sheetId);
+            }
+            else {
+                throw e;
+            }
+        }
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new payment type", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddPayType = menuAddPayType;
+function menuAddRecipient(name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var nameData = types_1.StringData.create(name.toLowerCase());
+        try {
+            get_1.getRecipientIds([nameData], sheetId);
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("Recipient already exists", 'Failed', 5);
+            }
+            return;
+        }
+        catch (e) {
+            if (e === types_1.ErrorType.NoMatchFoundError) {
+                append_1.appendRecipient([nameData], sheetId);
+            }
+            else {
+                throw e;
+            }
+        }
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new recipient", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddRecipient = menuAddRecipient;
+function renameMember(oldName, newName, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var oldNameData = new types_1.StringData(oldName.toLowerCase());
+    var newNameData = new types_1.StringData(newName.toLowerCase());
+    var noMatch = false;
+    try {
+        get_1.getMemberIds([newNameData], sheetId);
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            noMatch = true;
+        }
+        else {
+            throw e;
+        }
+    }
+    if (!noMatch) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('New name is already in use, try merging instead', 'Renaming Failed', 5);
+        }
+    }
+    else {
+        var id = get_1.getMemberIds([oldNameData], sheetId)[0];
+        update_1.updateMember([id], [newNameData], undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Renamed " + oldName + " to " + newName, 'Success', 5);
+        }
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.renameMember = renameMember;
+function renamePaymentType(oldName, newName, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var oldNameData = new types_1.StringData(oldName.toLowerCase());
+    var newNameData = new types_1.StringData(newName.toLowerCase());
+    var noMatch = false;
+    try {
+        get_1.getPaymentTypeIds([newNameData], sheetId);
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            noMatch = true;
+        }
+        else {
+            throw e;
+        }
+    }
+    if (!noMatch) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('New name is already in use, try merging instead', 'Renaming Failed', 5);
+        }
+    }
+    else {
+        var id = get_1.getPaymentTypeIds([oldNameData], sheetId)[0];
+        update_1.updatePaymentType([id], [newNameData], sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Renamed " + oldName + " to " + newName, 'Success', 5);
+        }
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.renamePaymentType = renamePaymentType;
+function renameRecipient(oldName, newName, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var oldNameData = new types_1.StringData(oldName.toLowerCase());
+    var newNameData = new types_1.StringData(newName.toLowerCase());
+    var noMatch = false;
+    try {
+        get_1.getRecipientIds([newNameData], sheetId);
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            noMatch = true;
+        }
+        else {
+            throw e;
+        }
+    }
+    if (!noMatch) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('New name is already in use, try merging instead', 'Renaming Failed', 5);
+        }
+    }
+    else {
+        var id = get_1.getRecipientIds([oldNameData], sheetId)[0];
+        update_1.updateRecipient([id], [newNameData], sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Renamed " + oldName + " to " + newName, 'Success', 5);
+        }
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.renameRecipient = renameRecipient;
+function mergeMember(aliases, name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var aliasList = aliases.toLowerCase().split('\n');
+    var i = aliasList.indexOf(name.toLowerCase());
+    if (i !== -1) {
+        aliasList.splice(i, 1);
+    }
+    if (aliasList.length === 0 ||
+        (aliasList.length === 1 && aliasList[0].length === 0)) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
+        }
+        return;
+    }
+    var aliasIds = get_1.getMemberIds(aliasList.map(function (s) { return new types_1.StringData(s); }), sheetId).map(function (n) { return n.getValue(); });
+    var newId = get_1.getMemberIds([new types_1.StringData(name.toLowerCase())], sheetId)[0];
+    var updateData = {
+        ids: [],
+        memIds: []
+    };
+    get_1.getAttendances(sheetId).forEach(function (attendance) {
+        if (!attendance.id || !attendance.member_ids)
+            throw types_1.ErrorType.AssertionError;
+        var curIds = attendance.member_ids.getValue().map(function (n) { return n.getValue(); });
+        var prunedIds = curIds.filter(function (id) { return aliasIds.indexOf(id) === -1; });
+        if (prunedIds.length < curIds.length) {
+            if (prunedIds.indexOf(newId.getValue()) === -1) {
+                prunedIds.push(newId.getValue());
+                prunedIds.sort();
+            }
+            updateData.ids.push(attendance.id);
+            updateData.memIds.push(new types_1.IntListData(prunedIds.map(function (id) { return new types_1.IntData(id); })));
+        }
+    });
+    if (updateData.ids.length > 0) {
+        update_1.updateAttendance(updateData.ids, undefined, updateData.memIds, undefined, sheetId);
+    }
+    remove_1.removeMember(aliasIds.map(function (n) { return new types_1.IntData(n); }), sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.mergeMember = mergeMember;
+function mergePaymentType(aliases, name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var aliasList = aliases.toLowerCase().split('\n');
+    var i = aliasList.indexOf(name.toLowerCase());
+    if (i !== -1) {
+        aliasList.splice(i, 1);
+    }
+    if (aliasList.length === 0 ||
+        (aliasList.length === 1 && aliasList[0].length === 0)) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
+        }
+        return;
+    }
+    var aliasIds = get_1.getPaymentTypeIds(aliasList.map(function (s) { return new types_1.StringData(s); }), sheetId).map(function (n) { return n.getValue(); });
+    var newId = get_1.getPaymentTypeIds([new types_1.StringData(name.toLowerCase())], sheetId)[0];
+    var incomeIds = [];
+    get_1.getIncomes(sheetId).forEach(function (income) {
+        if (!income.id || !income.paymentTypeId)
+            throw types_1.ErrorType.AssertionError;
+        if (aliasIds.indexOf(income.paymentTypeId.getValue()) !== -1) {
+            incomeIds.push(income.id);
+        }
+    });
+    var expenseIds = [];
+    get_1.getExpenses(sheetId).forEach(function (expense) {
+        if (!expense.id || !expense.paymentTypeId)
+            throw types_1.ErrorType.AssertionError;
+        if (aliasIds.indexOf(expense.paymentTypeId.getValue()) !== -1) {
+            expenseIds.push(expense.id);
+        }
+    });
+    if (incomeIds.length > 0) {
+        update_1.updateIncome(incomeIds, undefined, undefined, undefined, types_1.repeat(newId, incomeIds.length), undefined, sheetId);
+    }
+    if (expenseIds.length > 0) {
+        update_1.updateExpense(expenseIds, undefined, undefined, undefined, types_1.repeat(newId, expenseIds.length), undefined, undefined, sheetId);
+    }
+    remove_1.removePaymentType(aliasIds.map(function (n) { return new types_1.IntData(n); }), sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.mergePaymentType = mergePaymentType;
+function mergeRecipient(aliases, name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var aliasList = aliases.toLowerCase().split('\n');
+    var i = aliasList.indexOf(name.toLowerCase());
+    if (i !== -1) {
+        aliasList.splice(i, 1);
+    }
+    if (aliasList.length === 0 ||
+        (aliasList.length === 1 && aliasList[0].length === 0)) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
+        }
+        return;
+    }
+    var aliasIds = get_1.getRecipientIds(aliasList.map(function (s) { return new types_1.StringData(s); }), sheetId).map(function (n) { return n.getValue(); });
+    var newId = get_1.getRecipientIds([new types_1.StringData(name.toLowerCase())], sheetId)[0];
+    var expenseIds = [];
+    get_1.getExpenses(sheetId).forEach(function (expense) {
+        if (!expense.id || !expense.recipientId)
+            throw types_1.ErrorType.AssertionError;
+        if (aliasIds.indexOf(expense.recipientId.getValue()) !== -1) {
+            expenseIds.push(expense.id);
+        }
+    });
+    if (expenseIds.length > 0) {
+        update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, types_1.repeat(newId, expenseIds.length), undefined, sheetId);
+    }
+    remove_1.removeRecipient(aliasIds.map(function (n) { return new types_1.IntData(n); }), sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.mergeRecipient = mergeRecipient;
+function pollNotification(title, deadline, link, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    email_1.emailPollNotification(title, new Date(deadline), link, sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast('Emails sent', 'Success', 5);
+    }
+}
+exports.pollNotification = pollNotification;
+function notifyMembers(memberNames, subject, body, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var memberList = memberNames.toLowerCase().split('\n').map(function (name) { return new types_1.StringData(name); });
+    email_1.emailMembers(memberList, subject, body, sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast('Emails sent', 'Success', 5);
+    }
+}
+exports.notifyMembers = notifyMembers;
+
+
+/***/ }),
 /* 26 */,
 /* 27 */,
 /* 28 */,
@@ -3530,10 +4145,13 @@ exports.updateMemberStatus = updateMemberStatus;
 "use strict";
 
 exports.__esModule = true;
-var actions_1 = __webpack_require__(23);
+var actions_1 = __webpack_require__(24);
 var append_1 = __webpack_require__(17);
 var get_1 = __webpack_require__(2);
+var remove_1 = __webpack_require__(23);
+var update_1 = __webpack_require__(18);
 var types_1 = __webpack_require__(0);
+var handlers_1 = __webpack_require__(25);
 var unitTester_1 = __webpack_require__(31);
 function testAppendPartOne() {
     unitTester_1.UnitTester.runTests([
@@ -4690,39 +5308,1382 @@ function testFormActionsPartTwo() {
     ]);
 }
 exports.testFormActionsPartTwo = testFormActionsPartTwo;
-function testUpdate() {
+function testUpdatePartOne() {
     unitTester_1.UnitTester.runTests([
-        new unitTester_1.UnitTestSet('', [
-            new unitTester_1.UnitTest('', function (id) {
+        new unitTester_1.UnitTestSet('testUpdateMember', [
+            new unitTester_1.UnitTest('emptyUpdate', function (id) {
                 var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateMember([], [], [], [], [], [], [], [], [], [], [], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
                 return unitTester_1.checkDatabaseValues(tableVals, id);
-            })
+            }),
+            new unitTester_1.UnitTest('emptyUndefinedUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateMember([], undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateUnevenData', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateMember([new types_1.IntData(0), new types_1.IntData(1)], [new types_1.StringData('joe schmo')], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(0)], [new types_1.StringData('asdf@gmail.com')], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateMember([new types_1.IntData(0)], [new types_1.StringData('joe schmo')], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(0)], [new types_1.StringData('asdf@gmail.com')], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    update_1.updateMember([new types_1.IntData(50)], [new types_1.StringData('joe schmo')], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(0)], [new types_1.StringData('asdf@gmail.com')], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], [new types_1.BooleanData(false)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOnePartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateMember([new types_1.IntData(10)], [new types_1.StringData('abc')], [new types_1.DateData(new Date(123))], undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, id);
+                tableVals.member[11][1] = 'abc';
+                tableVals.member[11][2] = '123';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOneAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateMember([new types_1.IntData(10)], [new types_1.StringData('abc')], [new types_1.DateData(new Date(123))], [new types_1.IntData(100)], [new types_1.StringData('email@email.com')], [new types_1.BooleanData(false)], [new types_1.BooleanData(true)], [new types_1.BooleanData(false)], [new types_1.BooleanData(true)], [new types_1.BooleanData(false)], [new types_1.BooleanData(true)], id);
+                tableVals.member[11] = [
+                    '10',
+                    'abc',
+                    '123',
+                    '100',
+                    'email@email.com',
+                    '0',
+                    '1',
+                    '0',
+                    '1',
+                    '0',
+                    '1'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoPartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateMember([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.StringData('abc'), new types_1.StringData('xyz')], [new types_1.DateData(new Date(123)), new types_1.DateData(new Date(789))], undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, id);
+                tableVals.member[11][1] = 'abc';
+                tableVals.member[11][2] = '123';
+                tableVals.member[16][1] = 'xyz';
+                tableVals.member[16][2] = '789';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateMember([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.StringData('abc'), new types_1.StringData('xyz')], [new types_1.DateData(new Date(123)), new types_1.DateData(new Date(789))], [new types_1.IntData(100), new types_1.IntData(-55)], [new types_1.StringData('email@email.com'), new types_1.StringData('asdf@asdf.com')], [new types_1.BooleanData(false), new types_1.BooleanData(true)], [new types_1.BooleanData(true), new types_1.BooleanData(false)], [new types_1.BooleanData(false), new types_1.BooleanData(true)], [new types_1.BooleanData(true), new types_1.BooleanData(false)], [new types_1.BooleanData(false), new types_1.BooleanData(true)], [new types_1.BooleanData(true), new types_1.BooleanData(false)], id);
+                tableVals.member[11] = [
+                    '10',
+                    'abc',
+                    '123',
+                    '100',
+                    'email@email.com',
+                    '0',
+                    '1',
+                    '0',
+                    '1',
+                    '0',
+                    '1'
+                ];
+                tableVals.member[16] = [
+                    '15',
+                    'xyz',
+                    '789',
+                    '-55',
+                    'asdf@asdf.com',
+                    '1',
+                    '0',
+                    '1',
+                    '0',
+                    '1',
+                    '0'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testUpdateIncome', [
+            new unitTester_1.UnitTest('emptyUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateIncome([], [], [], [], [], [], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('emptyUndefinedUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateIncome([], undefined, undefined, undefined, undefined, undefined, id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateUnevenData', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateIncome([new types_1.IntData(0), new types_1.IntData(1)], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(444)], [new types_1.StringData('test')], [new types_1.IntData(0)], [new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateIncome([new types_1.IntData(0)], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(444)], [new types_1.StringData('test')], [new types_1.IntData(0)], [new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    update_1.updateIncome([new types_1.IntData(400)], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(444)], [new types_1.StringData('test')], [new types_1.IntData(0)], [new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOnePartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateIncome([new types_1.IntData(10)], [new types_1.DateData(new Date(334455))], [new types_1.IntData(0)], undefined, undefined, undefined, id);
+                tableVals.income[11][1] = '334455';
+                tableVals.income[11][2] = '0';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOneAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateIncome([new types_1.IntData(10)], [new types_1.DateData(new Date(334455))], [new types_1.IntData(0)], [new types_1.StringData('other test')], [new types_1.IntData(1)], [new types_1.IntData(0)], id);
+                tableVals.income[11] = [
+                    '10',
+                    '334455',
+                    '0',
+                    'other test',
+                    '1',
+                    '0'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoPartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateIncome([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(334455)), new types_1.DateData(new Date(111223))], [new types_1.IntData(0), new types_1.IntData(1000000)], undefined, undefined, undefined, id);
+                tableVals.income[11][1] = '334455';
+                tableVals.income[11][2] = '0';
+                tableVals.income[16][1] = '111223';
+                tableVals.income[16][2] = '1000000';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateIncome([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(334455)), new types_1.DateData(new Date(111223))], [new types_1.IntData(0), new types_1.IntData(1000000)], [new types_1.StringData('other test'), new types_1.StringData('Large sum')], [new types_1.IntData(1), new types_1.IntData(99)], [new types_1.IntData(0), new types_1.IntData(77)], id);
+                tableVals.income[11] = [
+                    '10',
+                    '334455',
+                    '0',
+                    'other test',
+                    '1',
+                    '0'
+                ];
+                tableVals.income[16] = [
+                    '15',
+                    '111223',
+                    '1000000',
+                    'Large sum',
+                    '99',
+                    '77'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testUpdateExpense', [
+            new unitTester_1.UnitTest('emptyUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateExpense([], [], [], [], [], [], [], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('emptyUndefinedUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateExpense([], undefined, undefined, undefined, undefined, undefined, undefined, id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateUnevenData', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateExpense([new types_1.IntData(0), new types_1.IntData(1)], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(444)], [new types_1.StringData('test')], [new types_1.IntData(0)], [new types_1.IntData(0)], [new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateExpense([new types_1.IntData(0)], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(444)], [new types_1.StringData('test')], [new types_1.IntData(0)], [new types_1.IntData(0)], [new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    update_1.updateExpense([new types_1.IntData(200)], [new types_1.DateData(new Date(123456789))], [new types_1.IntData(444)], [new types_1.StringData('test')], [new types_1.IntData(0)], [new types_1.IntData(0)], [new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOnePartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateExpense([new types_1.IntData(10)], [new types_1.DateData(new Date(334455))], [new types_1.IntData(0)], undefined, undefined, undefined, undefined, id);
+                tableVals.expense[11][1] = '334455';
+                tableVals.expense[11][2] = '0';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOneAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateExpense([new types_1.IntData(10)], [new types_1.DateData(new Date(334455))], [new types_1.IntData(0)], [new types_1.StringData('other test')], [new types_1.IntData(1)], [new types_1.IntData(0)], [new types_1.IntData(0)], id);
+                tableVals.expense[11] = [
+                    '10',
+                    '334455',
+                    '0',
+                    'other test',
+                    '1',
+                    '0',
+                    '0'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoPartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateExpense([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(334455)), new types_1.DateData(new Date(111223))], [new types_1.IntData(0), new types_1.IntData(1000000)], undefined, undefined, undefined, undefined, id);
+                tableVals.expense[11][1] = '334455';
+                tableVals.expense[11][2] = '0';
+                tableVals.expense[16][1] = '111223';
+                tableVals.expense[16][2] = '1000000';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateExpense([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(334455)), new types_1.DateData(new Date(111223))], [new types_1.IntData(0), new types_1.IntData(1000000)], [new types_1.StringData('other test'), new types_1.StringData('Large sum')], [new types_1.IntData(1), new types_1.IntData(99)], [new types_1.IntData(0), new types_1.IntData(77)], [new types_1.IntData(0), new types_1.IntData(77)], id);
+                tableVals.expense[11] = [
+                    '10',
+                    '334455',
+                    '0',
+                    'other test',
+                    '1',
+                    '0',
+                    '0'
+                ];
+                tableVals.expense[16] = [
+                    '15',
+                    '111223',
+                    '1000000',
+                    'Large sum',
+                    '99',
+                    '77',
+                    '77'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
         ])
     ]);
 }
-exports.testUpdate = testUpdate;
-function testRemove() {
+exports.testUpdatePartOne = testUpdatePartOne;
+function testUpdatePartTwo() {
     unitTester_1.UnitTester.runTests([
-        new unitTester_1.UnitTestSet('', [
-            new unitTester_1.UnitTest('', function (id) {
+        new unitTester_1.UnitTestSet('testUpdateRecipient', [
+            new unitTester_1.UnitTest('emptyUpdate', function (id) {
                 var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateRecipient([], [], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
                 return unitTester_1.checkDatabaseValues(tableVals, id);
-            })
+            }),
+            new unitTester_1.UnitTest('updateUnevenData', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateRecipient([new types_1.IntData(0), new types_1.IntData(1)], [new types_1.StringData('test')], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateRecipient([new types_1.IntData(0)], [new types_1.StringData('test')], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    update_1.updateRecipient([new types_1.IntData(100)], [new types_1.StringData('test')], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOneAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateRecipient([new types_1.IntData(10)], [new types_1.StringData('costco')], id);
+                tableVals.recipient[11][1] = 'costco';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateRecipient([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.StringData('costco'), new types_1.StringData('this is a recipient')], id);
+                tableVals.recipient[11][1] = 'costco';
+                tableVals.recipient[16][1] = 'this is a recipient';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testUpdatePaymentType', [
+            new unitTester_1.UnitTest('emptyUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updatePaymentType([], [], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateUnevenData', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updatePaymentType([new types_1.IntData(0), new types_1.IntData(1)], [new types_1.StringData('test')], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updatePaymentType([new types_1.IntData(0)], [new types_1.StringData('test')], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    update_1.updatePaymentType([new types_1.IntData(10)], [new types_1.StringData('test')], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOneAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updatePaymentType([new types_1.IntData(1)], [new types_1.StringData('xxxxx')], id);
+                tableVals.paymentType[2][1] = 'xxxxx';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updatePaymentType([new types_1.IntData(1), new types_1.IntData(6)], [new types_1.StringData('xxxxx'), new types_1.StringData('yyy')], id);
+                tableVals.paymentType[2][1] = 'xxxxx';
+                tableVals.paymentType[4][1] = 'yyy';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testUpdateStatement', [
+            new unitTester_1.UnitTest('emptyUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateStatement([], [], [], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('emptyUndefinedUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateStatement([], undefined, undefined, id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateUnevenData', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateStatement([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(40))], [types_1.BooleanData.TRUE], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateStatement([new types_1.IntData(0)], [new types_1.DateData(new Date(40))], [types_1.BooleanData.TRUE], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    update_1.updateStatement([new types_1.IntData(250)], [new types_1.DateData(new Date(40))], [types_1.BooleanData.TRUE], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOnePartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateStatement([new types_1.IntData(10)], [new types_1.DateData(new Date(40))], undefined, id);
+                tableVals.statement[11][1] = '40';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOneAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateStatement([new types_1.IntData(10)], [new types_1.DateData(new Date(40))], [types_1.BooleanData.TRUE], id);
+                tableVals.statement[11] = [
+                    '10',
+                    '40',
+                    '1'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoPartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateStatement([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(40)), new types_1.DateData(new Date(222222))], undefined, id);
+                tableVals.statement[11][1] = '40';
+                tableVals.statement[16][1] = '222222';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateStatement([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(40)), new types_1.DateData(new Date(222222))], [types_1.BooleanData.TRUE, types_1.BooleanData.FALSE], id);
+                tableVals.statement[11] = [
+                    '10',
+                    '40',
+                    '1'
+                ];
+                tableVals.statement[16] = [
+                    '15',
+                    '222222',
+                    '0'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testUpdateAttendance', [
+            new unitTester_1.UnitTest('emptyUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateAttendance([], [], [], [], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('emptyUndefinedUpdate', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateAttendance([], undefined, undefined, undefined, id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateUnevenData', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateAttendance([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(12321))], [new types_1.IntListData([new types_1.IntData(1), new types_1.IntData(5)])], [new types_1.QuarterData(types_1.Quarter.SPRING, new types_1.IntData(100))], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    update_1.updateAttendance([new types_1.IntData(0)], [new types_1.DateData(new Date(12321))], [new types_1.IntListData([new types_1.IntData(1), new types_1.IntData(5)])], [new types_1.QuarterData(types_1.Quarter.SPRING, new types_1.IntData(100))], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    update_1.updateAttendance([new types_1.IntData(100)], [new types_1.DateData(new Date(12321))], [new types_1.IntListData([new types_1.IntData(1), new types_1.IntData(5)])], [new types_1.QuarterData(types_1.Quarter.SPRING, new types_1.IntData(100))], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOnePartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateAttendance([new types_1.IntData(10)], [new types_1.DateData(new Date(1))], undefined, undefined, id);
+                tableVals.attendance[11][1] = '1';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateOneAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateAttendance([new types_1.IntData(10)], [new types_1.DateData(new Date(1))], [new types_1.IntListData([])], [new types_1.QuarterData(types_1.Quarter.FALL, new types_1.IntData(111))], id);
+                tableVals.attendance[11] = [
+                    '10',
+                    '1',
+                    '',
+                    '447'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoPartialFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateAttendance([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(1)), new types_1.DateData(new Date(800800))], undefined, undefined, id);
+                tableVals.attendance[11][1] = '1';
+                tableVals.attendance[16][1] = '800800';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateTwoAllFields', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateAttendance([new types_1.IntData(10), new types_1.IntData(15)], [new types_1.DateData(new Date(1)), new types_1.DateData(new Date(800800))], [new types_1.IntListData([]), new types_1.IntListData([new types_1.IntData(0), new types_1.IntData(7), new types_1.IntData(25)])], [new types_1.QuarterData(types_1.Quarter.FALL, new types_1.IntData(111)), new types_1.QuarterData(types_1.Quarter.WINTER, new types_1.IntData(1))], id);
+                tableVals.attendance[11] = [
+                    '10',
+                    '1',
+                    '',
+                    '447'
+                ];
+                tableVals.attendance[16] = [
+                    '15',
+                    '800800',
+                    '0,7,25',
+                    '4'
+                ];
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testUpdateClubInfo', [
+            new unitTester_1.UnitTest('undefinedUpdateNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateClubInfo(undefined, undefined, undefined, undefined, id);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updatePartialNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateClubInfo(new types_1.IntData(10), undefined, new types_1.IntData(4), undefined, id);
+                tableVals.clubInfo[1][0] = '10';
+                tableVals.clubInfo[1][2] = '4';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('updateAllNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                update_1.updateClubInfo(new types_1.IntData(10), new types_1.IntData(100), new types_1.IntData(4), new types_1.QuarterData(types_1.Quarter.SPRING, new types_1.IntData(1)), id);
+                tableVals.clubInfo[1][0] = '10';
+                tableVals.clubInfo[1][1] = '100';
+                tableVals.clubInfo[1][2] = '4';
+                tableVals.clubInfo[1][3] = '5';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+    ]);
+}
+exports.testUpdatePartTwo = testUpdatePartTwo;
+function testRemovePartOne() {
+    unitTester_1.UnitTester.runTests([
+        new unitTester_1.UnitTestSet('testRemoveMember', [
+            new unitTester_1.UnitTest('emptyRemove', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeMember([], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeMember([new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    remove_1.removeMember([new types_1.IntData(50)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeOne', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeMember([new types_1.IntData(10)], id);
+                tableVals.member.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeTwo', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeMember([new types_1.IntData(10), new types_1.IntData(15)], id);
+                tableVals.member.splice(16, 1);
+                tableVals.member.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testRemoveIncome', [
+            new unitTester_1.UnitTest('emptyRemove', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeIncome([], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeIncome([new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    remove_1.removeIncome([new types_1.IntData(400)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeOne', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeIncome([new types_1.IntData(10)], id);
+                tableVals.income.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeTwo', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeIncome([new types_1.IntData(10), new types_1.IntData(15)], id);
+                tableVals.income.splice(16, 1);
+                tableVals.income.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testRemoveExpense', [
+            new unitTester_1.UnitTest('emptyRemove', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeExpense([], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeExpense([new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    remove_1.removeExpense([new types_1.IntData(200)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeOne', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeExpense([new types_1.IntData(10)], id);
+                tableVals.expense.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeTwo', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeExpense([new types_1.IntData(10), new types_1.IntData(15)], id);
+                tableVals.expense.splice(16, 1);
+                tableVals.expense.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
         ])
     ]);
 }
-exports.testRemove = testRemove;
-function testMenuHandlers() {
+exports.testRemovePartOne = testRemovePartOne;
+function testRemovePartTwo() {
     unitTester_1.UnitTester.runTests([
-        new unitTester_1.UnitTestSet('', [
-            new unitTester_1.UnitTest('', function (id) {
+        new unitTester_1.UnitTestSet('testRemoveRecipient', [
+            new unitTester_1.UnitTest('emptyRemove', function (id) {
                 var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeRecipient([], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
                 return unitTester_1.checkDatabaseValues(tableVals, id);
-            })
-        ])
+            }),
+            new unitTester_1.UnitTest('removeNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeRecipient([new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    remove_1.removeRecipient([new types_1.IntData(100)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeOne', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeRecipient([new types_1.IntData(10)], id);
+                tableVals.recipient.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeTwo', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeRecipient([new types_1.IntData(10), new types_1.IntData(15)], id);
+                tableVals.recipient.splice(16, 1);
+                tableVals.recipient.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testRemovePaymentType', [
+            new unitTester_1.UnitTest('emptyRemove', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removePaymentType([], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removePaymentType([new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    remove_1.removePaymentType([new types_1.IntData(10)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeOne', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removePaymentType([new types_1.IntData(1)], id);
+                tableVals.paymentType.splice(2, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeTwo', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removePaymentType([new types_1.IntData(1), new types_1.IntData(6)], id);
+                tableVals.paymentType.splice(4, 1);
+                tableVals.paymentType.splice(2, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testRemoveStatement', [
+            new unitTester_1.UnitTest('emptyRemove', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeStatement([], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeStatement([new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    remove_1.removeStatement([new types_1.IntData(250)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeOne', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeStatement([new types_1.IntData(10)], id);
+                tableVals.statement.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeTwo', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeStatement([new types_1.IntData(10), new types_1.IntData(15)], id);
+                tableVals.statement.splice(16, 1);
+                tableVals.statement.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
+        new unitTester_1.UnitTestSet('testRemoveAttendance', [
+            new unitTester_1.UnitTest('emptyRemove', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeAttendance([], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.IllegalArgumentError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundEmpty', function (id) {
+                var tableVals = unitTester_1.getEmptyTableState();
+                try {
+                    remove_1.removeAttendance([new types_1.IntData(0)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeNotFoundNonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                try {
+                    remove_1.removeAttendance([new types_1.IntData(100)], id);
+                    return false;
+                }
+                catch (e) {
+                    if (e !== types_1.ErrorType.NoMatchFoundError) {
+                        throw e;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeOne', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeAttendance([new types_1.IntData(10)], id);
+                tableVals.attendance.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('removeTwo', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                remove_1.removeAttendance([new types_1.IntData(10), new types_1.IntData(15)], id);
+                tableVals.attendance.splice(16, 1);
+                tableVals.attendance.splice(11, 1);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+        ]),
     ]);
 }
-exports.testMenuHandlers = testMenuHandlers;
+exports.testRemovePartTwo = testRemovePartTwo;
+function testMenuHandlersPartOne() {
+    unitTester_1.UnitTester.runTests([
+        new unitTester_1.UnitTestSet('testAddMember', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddMember('joejoe', '1234', id, false);
+                tableVals.member.push([
+                    '45',
+                    'joejoe',
+                    '1234',
+                    '0',
+                    '',
+                    '0',
+                    '0',
+                    '0',
+                    '0',
+                    '0',
+                    '0',
+                ]);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testAddIncome', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddIncome('1234', '45.01', 'description', 'check', id, false);
+                tableVals.income.push([
+                    '373',
+                    '1234',
+                    '4501',
+                    'description',
+                    '1',
+                    '-1',
+                ]);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testAddExpense', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddExpense('1234', '45', 'description', 'madewell', 'check', id, false);
+                tableVals.expense.push([
+                    '161',
+                    '1234',
+                    '4500',
+                    'description',
+                    '1',
+                    '6',
+                    '-1',
+                ]);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testAddRecipient', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddRecipient('asdf', id, false);
+                tableVals.recipient.push([
+                    '58',
+                    'asdf',
+                ]);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testAddPayType', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddPayType('asdf', id, false);
+                tableVals.paymentType.push([
+                    '7',
+                    'asdf',
+                ]);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testAddStatement', [
+            new unitTester_1.UnitTest('noIncomesNoExpenses', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddStatement('123344', '', '', id, false);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('noIncomesSomeExpenses', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddStatement('123344', '', '10\n44', id, false);
+                tableVals.statement.push([
+                    '223',
+                    '123344',
+                    '0'
+                ]);
+                tableVals.expense[11][6] = '223';
+                tableVals.expense[45][6] = '223';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('someIncomesNoExpenses', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddStatement('123344', '9\n39', '', id, false);
+                tableVals.statement.push([
+                    '223',
+                    '123344',
+                    '0'
+                ]);
+                tableVals.income[10][5] = '223';
+                tableVals.income[40][5] = '223';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('someIncomesSomeExpenses', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddStatement('123344', '1\n3\n9', '22', id, false);
+                tableVals.statement.push([
+                    '223',
+                    '123344',
+                    '0'
+                ]);
+                tableVals.income[2][5] = '223';
+                tableVals.income[4][5] = '223';
+                tableVals.income[10][5] = '223';
+                tableVals.expense[23][6] = '223';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+    ]);
+}
+exports.testMenuHandlersPartOne = testMenuHandlersPartOne;
+function testMenuHandlersPartTwo() {
+    unitTester_1.UnitTester.runTests([
+        new unitTester_1.UnitTestSet('testAddAttendance', [
+            new unitTester_1.UnitTest('noMembers', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddAttendance('123344', '', 'Summer', '2000', id, false);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            }),
+            new unitTester_1.UnitTest('someMembers', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuAddAttendance('123344', '0,1,1,2,3,5', 'Summer', '2000', id, false);
+                tableVals.attendance.push([
+                    '50',
+                    '123344',
+                    '0,1,1,2,3,5',
+                    '8002'
+                ]);
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testRenameMember', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.renameMember('huey wilkins', 'joejoe', id, false);
+                tableVals.member[11][1] = 'joejoe';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testRenameRecipient', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.renameRecipient('madewell', 'asdf', id, false);
+                tableVals.recipient[7][1] = 'asdf';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testRenamePaymentType', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.renamePaymentType('venmo', 'asdf', id, false);
+                tableVals.paymentType[3][1] = 'asdf';
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testMergeMember', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.mergeMember('tarik santos', 'chris freeman', id, false);
+                var tarikId = '4';
+                var chrisId = '8';
+                tableVals.member.splice(5, 1);
+                for (var i = 0; i < tableVals.attendance.length; ++i) {
+                    var ids = tableVals.attendance[i][2].split(',');
+                    if (ids.indexOf(tarikId) !== -1) {
+                        ids.splice(ids.indexOf(tarikId), 1);
+                        if (ids.indexOf(chrisId) === -1) {
+                            ids.push(chrisId);
+                            ids.sort();
+                        }
+                        tableVals.attendance[i][2] = ids.join(',');
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testMergeRecipient', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.mergeRecipient('mercer\nmadewell', 'amazon', id, false);
+                var madewellId = '6';
+                var mercerId = '12';
+                var amazonId = '1';
+                tableVals.recipient.splice(13, 1);
+                tableVals.recipient.splice(7, 1);
+                for (var i = 0; i < tableVals.expense.length; ++i) {
+                    if (tableVals.expense[i][5] === madewellId) {
+                        tableVals.expense[i][5] = amazonId;
+                    }
+                    if (tableVals.expense[i][5] === mercerId) {
+                        tableVals.expense[i][5] = amazonId;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testMergePaymentType', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.mergePaymentType('cash\nvenmo', 'debit', id, false);
+                var cashId = '0';
+                var venmoId = '4';
+                var debitId = '6';
+                tableVals.paymentType.splice(3, 1);
+                tableVals.paymentType.splice(1, 1);
+                for (var i = 0; i < tableVals.income.length; ++i) {
+                    if (tableVals.income[i][4] === cashId) {
+                        tableVals.income[i][4] = debitId;
+                    }
+                    if (tableVals.income[i][4] === venmoId) {
+                        tableVals.income[i][4] = debitId;
+                    }
+                }
+                for (var i = 0; i < tableVals.expense.length; ++i) {
+                    if (tableVals.expense[i][4] === cashId) {
+                        tableVals.expense[i][4] = debitId;
+                    }
+                    if (tableVals.expense[i][4] === venmoId) {
+                        tableVals.expense[i][4] = debitId;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+    ]);
+}
+exports.testMenuHandlersPartTwo = testMenuHandlersPartTwo;
 
 
 /***/ }),
@@ -5922,7 +7883,7 @@ var UnitTester = (function () {
         if (log.length > 0) {
             console.log(log.join('\n'));
         }
-        Drive.Files.remove(id);
+        Drive.Files.trash(id);
     };
     return UnitTester;
 }());

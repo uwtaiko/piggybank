@@ -82,7 +82,7 @@ var Bundle_main =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 24);
+/******/ 	return __webpack_require__(__webpack_require__.s = 26);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -126,8 +126,8 @@ var __spread = (this && this.__spread) || function () {
 };
 exports.__esModule = true;
 var disable_1 = __webpack_require__(4);
-var refresh_1 = __webpack_require__(20);
-var refresh_2 = __webpack_require__(21);
+var refresh_1 = __webpack_require__(21);
+var refresh_2 = __webpack_require__(22);
 var ErrorType = (function () {
     function ErrorType() {
     }
@@ -1644,6 +1644,244 @@ exports.appendAttendance = appendAttendance;
 
 "use strict";
 
+exports.__esModule = true;
+var tablesId_1 = __webpack_require__(3);
+var tableOps_1 = __webpack_require__(1);
+var types_1 = __webpack_require__(0);
+function updateMember(id, name, dateJoined, amountOwed, email, performing, active, officer, currentDuesPaid, notifyPoll, sendReceipt, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Member');
+    var numEntries = id.length;
+    if ((name && name.length !== numEntries) ||
+        (dateJoined && dateJoined.length !== numEntries) ||
+        (amountOwed && amountOwed.length !== numEntries) ||
+        (email && email.length !== numEntries) ||
+        (performing && performing.length !== numEntries) ||
+        (active && active.length !== numEntries) ||
+        (officer && officer.length !== numEntries) ||
+        (currentDuesPaid && currentDuesPaid.length !== numEntries) ||
+        (notifyPoll && notifyPoll.length !== numEntries) ||
+        (sendReceipt && sendReceipt.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!name)
+        name = sheetVals.map(function (row) { return types_1.StringData.create(row[1].toString()); });
+    if (!dateJoined)
+        dateJoined = sheetVals.map(function (row) { return types_1.DateData.create(row[2].toString()); });
+    if (!amountOwed)
+        amountOwed = sheetVals.map(function (row) { return types_1.IntData.create(row[3].toString()); });
+    if (!email)
+        email = sheetVals.map(function (row) { return types_1.StringData.create(row[4].toString()); });
+    if (!performing)
+        performing = sheetVals.map(function (row) { return types_1.BooleanData.create(row[5].toString()); });
+    if (!active)
+        active = sheetVals.map(function (row) { return types_1.BooleanData.create(row[6].toString()); });
+    if (!officer)
+        officer = sheetVals.map(function (row) { return types_1.BooleanData.create(row[7].toString()); });
+    if (!currentDuesPaid)
+        currentDuesPaid = sheetVals.map(function (row) { return types_1.BooleanData.create(row[8].toString()); });
+    if (!notifyPoll)
+        notifyPoll = sheetVals.map(function (row) { return types_1.BooleanData.create(row[9].toString()); });
+    if (!sendReceipt)
+        sendReceipt = sheetVals.map(function (row) { return types_1.BooleanData.create(row[10].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.MemberEntry(id[i], name[i], dateJoined[i], amountOwed[i], email[i], performing[i], active[i], officer[i], currentDuesPaid[i], notifyPoll[i], sendReceipt[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.MEMBER);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateMember = updateMember;
+function updateIncome(id, date, amount, description, paymentTypeId, statementId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Income');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (amount && amount.length !== numEntries) ||
+        (description && description.length !== numEntries) ||
+        (paymentTypeId && paymentTypeId.length !== numEntries) ||
+        (statementId && statementId.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!amount)
+        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
+    if (!description)
+        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
+    if (!paymentTypeId)
+        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
+    if (!statementId)
+        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.IncomeEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], statementId[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.INCOME);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateIncome = updateIncome;
+function updateExpense(id, date, amount, description, paymentTypeId, recipientId, statementId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Expense');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (amount && amount.length !== numEntries) ||
+        (description && description.length !== numEntries) ||
+        (paymentTypeId && paymentTypeId.length !== numEntries) ||
+        (recipientId && recipientId.length !== numEntries) ||
+        (statementId && statementId.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!amount)
+        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
+    if (!description)
+        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
+    if (!paymentTypeId)
+        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
+    if (!recipientId)
+        recipientId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
+    if (!statementId)
+        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[6].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.ExpenseEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], recipientId[i], statementId[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.EXPENSE);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateExpense = updateExpense;
+function updateRecipient(id, name, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Recipient');
+    var numEntries = id.length;
+    if (name && name.length !== numEntries) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.RecipientEntry(id[i], name[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.RECIPIENT);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateRecipient = updateRecipient;
+function updatePaymentType(id, name, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('PaymentType');
+    var numEntries = id.length;
+    if (name && name.length !== numEntries) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.PaymentTypeEntry(id[i], name[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.PAYMENT_TYPE);
+    tableOps_1.update(sheet, entries);
+}
+exports.updatePaymentType = updatePaymentType;
+function updateStatement(id, date, confirmed, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Statement');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (confirmed && confirmed.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!confirmed)
+        confirmed = sheetVals.map(function (row) { return types_1.BooleanData.create(row[2].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.StatementEntry(id[i], date[i], confirmed[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.STATEMENT);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateStatement = updateStatement;
+function updateAttendance(id, date, memberIds, quarterId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Attendance');
+    var numEntries = id.length;
+    if ((date && date.length !== numEntries) ||
+        (memberIds && memberIds.length !== numEntries) ||
+        (quarterId && quarterId.length !== numEntries)) {
+        throw types_1.ErrorType.IllegalArgumentError;
+    }
+    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
+    var allSheetVals = tableOps_1.selectAll(sheet);
+    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
+    if (!date)
+        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
+    if (!memberIds)
+        memberIds = sheetVals.map(function (row) { return types_1.IntListData.create(row[2].toString()); });
+    if (!quarterId)
+        quarterId = sheetVals.map(function (row) { return types_1.QuarterData.create(row[3].toString()); });
+    var entries = [];
+    for (var i = 0; i < numEntries; ++i) {
+        entries.push(new types_1.AttendanceEntry(id[i], date[i], memberIds[i], quarterId[i]));
+    }
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.ATTENDANCE);
+    tableOps_1.update(sheet, entries);
+}
+exports.updateAttendance = updateAttendance;
+function updateClubInfo(memberFee, officerFee, daysUntilFeeRequired, currentQuarterId, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('ClubInfo') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('ClubInfo');
+    var sheetVals = tableOps_1.selectAll(sheet)[0];
+    if (!memberFee)
+        memberFee = types_1.IntData.create(sheetVals[0].toString());
+    if (!officerFee)
+        officerFee = types_1.IntData.create(sheetVals[1].toString());
+    if (!daysUntilFeeRequired)
+        daysUntilFeeRequired = types_1.IntData.create(sheetVals[2].toString());
+    if (!currentQuarterId)
+        currentQuarterId = types_1.QuarterData.create(sheetVals[3].toString());
+    sheet
+        .getRange(0 + tableOps_1.HEADER_LEN + tableOps_1.GAS_OFFSET, 1, 1, sheetVals.length)
+        .setValues([
+        [
+            memberFee.toString(),
+            officerFee.toString(),
+            daysUntilFeeRequired.toString(),
+            currentQuarterId.toString(),
+        ],
+    ]);
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.CLUB_INFO);
+}
+exports.updateClubInfo = updateClubInfo;
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
     if (m) return m.call(o);
@@ -1655,7 +1893,7 @@ var __values = (this && this.__values) || function (o) {
     };
 };
 exports.__esModule = true;
-var projectInfo_1 = __webpack_require__(19);
+var projectInfo_1 = __webpack_require__(20);
 var get_1 = __webpack_require__(2);
 var types_1 = __webpack_require__(0);
 function sendEmails(emails, subject, body) {
@@ -1734,9 +1972,9 @@ function emailIOUNotification(memberNames, amount, description) {
     sendEmails(emails, "IOU for " + projectInfo_1.GROUP_NAME, "This is confirming that you owe $" + amount + " to " + projectInfo_1.GROUP_NAME + " for '" + description + "'.");
 }
 exports.emailIOUNotification = emailIOUNotification;
-function emailPollNotification(pollName, deadline, link) {
+function emailPollNotification(pollName, deadline, link, sheetId) {
     var e_3, _a;
-    var members = get_1.getMembers();
+    var members = get_1.getMembers(sheetId);
     var emails = [];
     try {
         for (var members_1 = __values(members), members_1_1 = members_1.next(); !members_1_1.done; members_1_1 = members_1.next()) {
@@ -1829,10 +2067,44 @@ function emailPollNotification(pollName, deadline, link) {
     sendEmails(emails, projectInfo_1.GROUP_NAME + " Performance Poll", "Please respond to the " + pollName + " poll before " + weekday + ", " + month + " " + date + " at " + hours + ":" + mins + " " + ampm + ".\nLink: " + link);
 }
 exports.emailPollNotification = emailPollNotification;
+function emailMembers(memberList, subject, body, sheetId) {
+    var e_4, _a;
+    var members = get_1.getMembers(sheetId);
+    var emails = [];
+    var startIndex = 0;
+    try {
+        for (var memberList_1 = __values(memberList), memberList_1_1 = memberList_1.next(); !memberList_1_1.done; memberList_1_1 = memberList_1.next()) {
+            var name = memberList_1_1.value;
+            var i = startIndex;
+            do {
+                var curName = members[i].name;
+                var curEmail = members[i].email;
+                if (!curName || !curEmail) {
+                    throw types_1.ErrorType.AssertionError;
+                }
+                else if (curName.getValue() === name.getValue()) {
+                    emails.push(curEmail.getValue());
+                    startIndex = i;
+                    break;
+                }
+                i = (i + 1) % members.length;
+            } while (i !== startIndex);
+        }
+    }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+    finally {
+        try {
+            if (memberList_1_1 && !memberList_1_1.done && (_a = memberList_1["return"])) _a.call(memberList_1);
+        }
+        finally { if (e_4) throw e_4.error; }
+    }
+    emails.map(function (email) { return GmailApp.sendEmail(email, subject, body); });
+}
+exports.emailMembers = emailMembers;
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1847,7 +2119,7 @@ exports.NUM_ATTNS = '';
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2356,7 +2628,7 @@ exports.refreshUpdateMemberStatus = refreshUpdateMemberStatus;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2921,7 +3193,7 @@ exports.refreshStatements = refreshStatements;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2930,236 +3202,73 @@ exports.__esModule = true;
 var tablesId_1 = __webpack_require__(3);
 var tableOps_1 = __webpack_require__(1);
 var types_1 = __webpack_require__(0);
-function updateMember(id, name, dateJoined, amountOwed, email, performing, active, officer, currentDuesPaid, notifyPoll, sendReceipt, sheetId) {
+function removeMember(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Member');
-    var numEntries = id.length;
-    if ((name && name.length !== numEntries) ||
-        (dateJoined && dateJoined.length !== numEntries) ||
-        (amountOwed && amountOwed.length !== numEntries) ||
-        (email && email.length !== numEntries) ||
-        (performing && performing.length !== numEntries) ||
-        (active && active.length !== numEntries) ||
-        (officer && officer.length !== numEntries) ||
-        (currentDuesPaid && currentDuesPaid.length !== numEntries) ||
-        (notifyPoll && notifyPoll.length !== numEntries) ||
-        (sendReceipt && sendReceipt.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!name)
-        name = sheetVals.map(function (row) { return types_1.StringData.create(row[1].toString()); });
-    if (!dateJoined)
-        dateJoined = sheetVals.map(function (row) { return types_1.DateData.create(row[2].toString()); });
-    if (!amountOwed)
-        amountOwed = sheetVals.map(function (row) { return types_1.IntData.create(row[3].toString()); });
-    if (!email)
-        email = sheetVals.map(function (row) { return types_1.StringData.create(row[4].toString()); });
-    if (!performing)
-        performing = sheetVals.map(function (row) { return types_1.BooleanData.create(row[5].toString()); });
-    if (!active)
-        active = sheetVals.map(function (row) { return types_1.BooleanData.create(row[6].toString()); });
-    if (!officer)
-        officer = sheetVals.map(function (row) { return types_1.BooleanData.create(row[7].toString()); });
-    if (!currentDuesPaid)
-        currentDuesPaid = sheetVals.map(function (row) { return types_1.BooleanData.create(row[8].toString()); });
-    if (!notifyPoll)
-        notifyPoll = sheetVals.map(function (row) { return types_1.BooleanData.create(row[9].toString()); });
-    if (!sendReceipt)
-        sendReceipt = sheetVals.map(function (row) { return types_1.BooleanData.create(row[10].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.MemberEntry(id[i], name[i], dateJoined[i], amountOwed[i], email[i], performing[i], active[i], officer[i], currentDuesPaid[i], notifyPoll[i], sendReceipt[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.MemberEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.MEMBER);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateMember = updateMember;
-function updateIncome(id, date, amount, description, paymentTypeId, statementId, sheetId) {
+exports.removeMember = removeMember;
+function removeIncome(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Income');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (amount && amount.length !== numEntries) ||
-        (description && description.length !== numEntries) ||
-        (paymentTypeId && paymentTypeId.length !== numEntries) ||
-        (statementId && statementId.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!amount)
-        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
-    if (!description)
-        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
-    if (!paymentTypeId)
-        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
-    if (!statementId)
-        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.IncomeEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], statementId[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.IncomeEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.INCOME);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateIncome = updateIncome;
-function updateExpense(id, date, amount, description, paymentTypeId, recipientId, statementId, sheetId) {
+exports.removeIncome = removeIncome;
+function removeExpense(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Expense');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (amount && amount.length !== numEntries) ||
-        (description && description.length !== numEntries) ||
-        (paymentTypeId && paymentTypeId.length !== numEntries) ||
-        (recipientId && recipientId.length !== numEntries) ||
-        (statementId && statementId.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!amount)
-        amount = sheetVals.map(function (row) { return types_1.IntData.create(row[2].toString()); });
-    if (!description)
-        description = sheetVals.map(function (row) { return types_1.StringData.create(row[3].toString()); });
-    if (!paymentTypeId)
-        paymentTypeId = sheetVals.map(function (row) { return types_1.IntData.create(row[4].toString()); });
-    if (!recipientId)
-        recipientId = sheetVals.map(function (row) { return types_1.IntData.create(row[5].toString()); });
-    if (!statementId)
-        statementId = sheetVals.map(function (row) { return types_1.IntData.create(row[6].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.ExpenseEntry(id[i], date[i], amount[i], description[i], paymentTypeId[i], recipientId[i], statementId[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.ExpenseEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.EXPENSE);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateExpense = updateExpense;
-function updateRecipient(id, name, sheetId) {
+exports.removeExpense = removeExpense;
+function removeRecipient(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Recipient');
-    var numEntries = id.length;
-    if (name && name.length !== numEntries) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.RecipientEntry(id[i], name[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.RecipientEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.RECIPIENT);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateRecipient = updateRecipient;
-function updatePaymentType(id, name, sheetId) {
+exports.removeRecipient = removeRecipient;
+function removePaymentType(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('PaymentType');
-    var numEntries = id.length;
-    if (name && name.length !== numEntries) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.PaymentTypeEntry(id[i], name[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.PaymentTypeEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.PAYMENT_TYPE);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updatePaymentType = updatePaymentType;
-function updateStatement(id, date, confirmed, sheetId) {
+exports.removePaymentType = removePaymentType;
+function removeStatement(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Statement');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (confirmed && confirmed.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!confirmed)
-        confirmed = sheetVals.map(function (row) { return types_1.BooleanData.create(row[4].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.StatementEntry(id[i], date[i], confirmed[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.STATEMENT);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateStatement = updateStatement;
-function updateAttendance(id, date, memberIds, quarterId, sheetId) {
+exports.removeStatement = removeStatement;
+function removeAttendance(id, sheetId) {
     var sheet = sheetId ?
         SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
         SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Attendance');
-    var numEntries = id.length;
-    if ((date && date.length !== numEntries) ||
-        (memberIds && memberIds.length !== numEntries) ||
-        (quarterId && quarterId.length !== numEntries)) {
-        throw types_1.ErrorType.IllegalArgumentError;
-    }
-    var indicies = tableOps_1.getIndicesFromIds(sheet, id);
-    var allSheetVals = tableOps_1.selectAll(sheet);
-    var sheetVals = indicies.map(function (i) { return allSheetVals[i]; });
-    if (!date)
-        date = sheetVals.map(function (row) { return types_1.DateData.create(row[1].toString()); });
-    if (!memberIds)
-        memberIds = sheetVals.map(function (row) { return types_1.IntListData.create(row[2].toString()); });
-    if (!quarterId)
-        quarterId = sheetVals.map(function (row) { return types_1.QuarterData.create(row[3].toString()); });
-    var entries = [];
-    for (var i = 0; i < numEntries; ++i) {
-        entries.push(new types_1.AttendanceEntry(id[i], date[i], memberIds[i], quarterId[i]));
-    }
+    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
     types_1.RefreshLogger.markAsUpdated(types_1.DataTable.ATTENDANCE);
-    tableOps_1.update(sheet, entries);
+    tableOps_1.remove(sheet, entries);
 }
-exports.updateAttendance = updateAttendance;
-function updateClubInfo(memberFee, officerFee, daysUntilFeeRequired, currentQuarterId, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('ClubInfo') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('ClubInfo');
-    var sheetVals = tableOps_1.selectAll(sheet)[0];
-    if (!memberFee)
-        memberFee = types_1.IntData.create(sheetVals[0].toString());
-    if (!officerFee)
-        officerFee = types_1.IntData.create(sheetVals[1].toString());
-    if (!daysUntilFeeRequired)
-        daysUntilFeeRequired = types_1.IntData.create(sheetVals[2].toString());
-    if (!currentQuarterId)
-        currentQuarterId = types_1.QuarterData.create(sheetVals[3].toString());
-    sheet
-        .getRange(0 + tableOps_1.HEADER_LEN + tableOps_1.GAS_OFFSET, 1, 1, sheetVals.length)
-        .setValues([
-        [
-            memberFee.toString(),
-            officerFee.toString(),
-            daysUntilFeeRequired.toString(),
-            currentQuarterId.toString(),
-        ],
-    ]);
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.CLUB_INFO);
-}
-exports.updateClubInfo = updateClubInfo;
+exports.removeAttendance = removeAttendance;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3175,10 +3284,10 @@ var __values = (this && this.__values) || function (o) {
     };
 };
 exports.__esModule = true;
-var email_1 = __webpack_require__(18);
+var email_1 = __webpack_require__(19);
 var append_1 = __webpack_require__(17);
 var get_1 = __webpack_require__(2);
-var update_1 = __webpack_require__(22);
+var update_1 = __webpack_require__(18);
 var types_1 = __webpack_require__(0);
 function getAmountOwed(memberNames, sheetId) {
     var e_1, _a;
@@ -3518,15 +3627,523 @@ exports.updateMemberStatus = updateMemberStatus;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 exports.__esModule = true;
-var actions_1 = __webpack_require__(23);
+var email_1 = __webpack_require__(19);
+var viewsId_1 = __webpack_require__(16);
+var append_1 = __webpack_require__(17);
+var get_1 = __webpack_require__(2);
+var remove_1 = __webpack_require__(23);
+var update_1 = __webpack_require__(18);
+var types_1 = __webpack_require__(0);
+function menuAddMember(name, dateJoined, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var nameData = new types_1.StringData(name.toLowerCase());
+    var date = types_1.DateData.create(dateJoined);
+    try {
+        get_1.getMemberIds([nameData], sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('Name is already in use', 'Adding Failed', 5);
+        }
+        else {
+            throw 'Name is already in use';
+        }
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            append_1.appendMember([nameData], [date], [new types_1.IntData(0)], [new types_1.StringData('')], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], sheetId);
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("Added Member", 'Success', 5);
+            }
+            types_1.RefreshLogger.refresh();
+        }
+        else {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast('Check error log for details', 'Adding Failed', 5);
+            }
+            throw e;
+        }
+    }
+}
+exports.menuAddMember = menuAddMember;
+function menuAddAttendance(date, members, quarter, year, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var dateAsData = types_1.DateData.create(date);
+        var memberIds = void 0;
+        if (members === '') {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("No members listed; attendance not added", 'No Action Taken', 5);
+            }
+            return;
+        }
+        else {
+            memberIds = new types_1.IntListData(members
+                .split(',')
+                .map(function (s) { return new types_1.IntData(parseInt(s)); })
+                .sort(function (a, b) { return a.getValue() - b.getValue(); }));
+        }
+        var quarterVal = void 0;
+        switch (quarter) {
+            case 'Winter':
+                quarterVal = types_1.Quarter.WINTER;
+                break;
+            case 'Spring':
+                quarterVal = types_1.Quarter.SPRING;
+                break;
+            case 'Summer':
+                quarterVal = types_1.Quarter.SUMMER;
+                break;
+            case 'Fall':
+                quarterVal = types_1.Quarter.FALL;
+                break;
+            default:
+                throw types_1.ErrorType.IllegalArgumentError;
+        }
+        var quarterId = new types_1.QuarterData(quarterVal, types_1.IntData.create(year));
+        append_1.appendAttendance([dateAsData], [memberIds], [quarterId], sheetId);
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new attendance record", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddAttendance = menuAddAttendance;
+function menuAddIncome(date, amount, description, payType, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var payId = get_1.getPaymentTypeIds([new types_1.StringData(payType.toLowerCase())], sheetId)[0];
+        var amountVal = parseFloat(amount);
+        if (isNaN(amountVal))
+            throw types_1.ErrorType.IllegalArgumentError;
+        append_1.appendIncome([types_1.DateData.create(date)], [new types_1.IntData(Math.round(amountVal * 100))], [types_1.StringData.create(description)], [payId], [new types_1.IntData(-1)], sheetId);
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new income", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddIncome = menuAddIncome;
+function menuAddExpense(date, amount, description, recipient, payType, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var payId = get_1.getPaymentTypeIds([new types_1.StringData(payType.toLowerCase())], sheetId)[0];
+        var amountVal = parseFloat(amount);
+        if (isNaN(amountVal))
+            throw types_1.ErrorType.IllegalArgumentError;
+        var recipientData = new types_1.StringData(recipient.toLowerCase());
+        var recipientId = void 0;
+        try {
+            recipientId = get_1.getRecipientIds([recipientData], sheetId)[0];
+        }
+        catch (e) {
+            if (e === types_1.ErrorType.NoMatchFoundError) {
+                recipientId = append_1.appendRecipient([recipientData], sheetId)[0];
+            }
+            else {
+                throw e;
+            }
+        }
+        append_1.appendExpense([types_1.DateData.create(date)], [new types_1.IntData(Math.round(amountVal * 100))], [types_1.StringData.create(description)], [payId], [recipientId], [new types_1.IntData(-1)], sheetId);
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new expense", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddExpense = menuAddExpense;
+function menuAddStatement(date, incomes, expenses, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        if (incomes.length === 0 && expenses.length === 0) {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("No incomes or expenses were specified", 'No Change', 5);
+            }
+            return;
+        }
+        var statementId = append_1.appendStatement([types_1.DateData.create(date)], [types_1.BooleanData.FALSE], sheetId)[0];
+        if (incomes.length > 0) {
+            var incomeIds = incomes.split('\n').map(types_1.IntData.create);
+            update_1.updateIncome(incomeIds, undefined, undefined, undefined, undefined, types_1.repeat(statementId, incomeIds.length), sheetId);
+        }
+        if (expenses.length > 0) {
+            var expenseIds = expenses.split('\n').map(types_1.IntData.create);
+            update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, undefined, types_1.repeat(statementId, expenseIds.length), sheetId);
+        }
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new statement", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddStatement = menuAddStatement;
+function menuAddPayType(name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var nameData = types_1.StringData.create(name.toLowerCase());
+        try {
+            get_1.getPaymentTypeIds([nameData], sheetId);
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("Payment type already exists", 'Failed', 5);
+            }
+            return;
+        }
+        catch (e) {
+            if (e === types_1.ErrorType.NoMatchFoundError) {
+                append_1.appendPaymentType([nameData], sheetId);
+            }
+            else {
+                throw e;
+            }
+        }
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new payment type", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddPayType = menuAddPayType;
+function menuAddRecipient(name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    try {
+        var nameData = types_1.StringData.create(name.toLowerCase());
+        try {
+            get_1.getRecipientIds([nameData], sheetId);
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast("Recipient already exists", 'Failed', 5);
+            }
+            return;
+        }
+        catch (e) {
+            if (e === types_1.ErrorType.NoMatchFoundError) {
+                append_1.appendRecipient([nameData], sheetId);
+            }
+            else {
+                throw e;
+            }
+        }
+    }
+    catch (e) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
+        }
+        throw e;
+    }
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Added new recipient", 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuAddRecipient = menuAddRecipient;
+function renameMember(oldName, newName, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var oldNameData = new types_1.StringData(oldName.toLowerCase());
+    var newNameData = new types_1.StringData(newName.toLowerCase());
+    var noMatch = false;
+    try {
+        get_1.getMemberIds([newNameData], sheetId);
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            noMatch = true;
+        }
+        else {
+            throw e;
+        }
+    }
+    if (!noMatch) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('New name is already in use, try merging instead', 'Renaming Failed', 5);
+        }
+    }
+    else {
+        var id = get_1.getMemberIds([oldNameData], sheetId)[0];
+        update_1.updateMember([id], [newNameData], undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Renamed " + oldName + " to " + newName, 'Success', 5);
+        }
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.renameMember = renameMember;
+function renamePaymentType(oldName, newName, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var oldNameData = new types_1.StringData(oldName.toLowerCase());
+    var newNameData = new types_1.StringData(newName.toLowerCase());
+    var noMatch = false;
+    try {
+        get_1.getPaymentTypeIds([newNameData], sheetId);
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            noMatch = true;
+        }
+        else {
+            throw e;
+        }
+    }
+    if (!noMatch) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('New name is already in use, try merging instead', 'Renaming Failed', 5);
+        }
+    }
+    else {
+        var id = get_1.getPaymentTypeIds([oldNameData], sheetId)[0];
+        update_1.updatePaymentType([id], [newNameData], sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Renamed " + oldName + " to " + newName, 'Success', 5);
+        }
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.renamePaymentType = renamePaymentType;
+function renameRecipient(oldName, newName, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var oldNameData = new types_1.StringData(oldName.toLowerCase());
+    var newNameData = new types_1.StringData(newName.toLowerCase());
+    var noMatch = false;
+    try {
+        get_1.getRecipientIds([newNameData], sheetId);
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            noMatch = true;
+        }
+        else {
+            throw e;
+        }
+    }
+    if (!noMatch) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast('New name is already in use, try merging instead', 'Renaming Failed', 5);
+        }
+    }
+    else {
+        var id = get_1.getRecipientIds([oldNameData], sheetId)[0];
+        update_1.updateRecipient([id], [newNameData], sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Renamed " + oldName + " to " + newName, 'Success', 5);
+        }
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.renameRecipient = renameRecipient;
+function mergeMember(aliases, name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var aliasList = aliases.toLowerCase().split('\n');
+    var i = aliasList.indexOf(name.toLowerCase());
+    if (i !== -1) {
+        aliasList.splice(i, 1);
+    }
+    if (aliasList.length === 0 ||
+        (aliasList.length === 1 && aliasList[0].length === 0)) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
+        }
+        return;
+    }
+    var aliasIds = get_1.getMemberIds(aliasList.map(function (s) { return new types_1.StringData(s); }), sheetId).map(function (n) { return n.getValue(); });
+    var newId = get_1.getMemberIds([new types_1.StringData(name.toLowerCase())], sheetId)[0];
+    var updateData = {
+        ids: [],
+        memIds: []
+    };
+    get_1.getAttendances(sheetId).forEach(function (attendance) {
+        if (!attendance.id || !attendance.member_ids)
+            throw types_1.ErrorType.AssertionError;
+        var curIds = attendance.member_ids.getValue().map(function (n) { return n.getValue(); });
+        var prunedIds = curIds.filter(function (id) { return aliasIds.indexOf(id) === -1; });
+        if (prunedIds.length < curIds.length) {
+            if (prunedIds.indexOf(newId.getValue()) === -1) {
+                prunedIds.push(newId.getValue());
+                prunedIds.sort();
+            }
+            updateData.ids.push(attendance.id);
+            updateData.memIds.push(new types_1.IntListData(prunedIds.map(function (id) { return new types_1.IntData(id); })));
+        }
+    });
+    if (updateData.ids.length > 0) {
+        update_1.updateAttendance(updateData.ids, undefined, updateData.memIds, undefined, sheetId);
+    }
+    remove_1.removeMember(aliasIds.map(function (n) { return new types_1.IntData(n); }), sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.mergeMember = mergeMember;
+function mergePaymentType(aliases, name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var aliasList = aliases.toLowerCase().split('\n');
+    var i = aliasList.indexOf(name.toLowerCase());
+    if (i !== -1) {
+        aliasList.splice(i, 1);
+    }
+    if (aliasList.length === 0 ||
+        (aliasList.length === 1 && aliasList[0].length === 0)) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
+        }
+        return;
+    }
+    var aliasIds = get_1.getPaymentTypeIds(aliasList.map(function (s) { return new types_1.StringData(s); }), sheetId).map(function (n) { return n.getValue(); });
+    var newId = get_1.getPaymentTypeIds([new types_1.StringData(name.toLowerCase())], sheetId)[0];
+    var incomeIds = [];
+    get_1.getIncomes(sheetId).forEach(function (income) {
+        if (!income.id || !income.paymentTypeId)
+            throw types_1.ErrorType.AssertionError;
+        if (aliasIds.indexOf(income.paymentTypeId.getValue()) !== -1) {
+            incomeIds.push(income.id);
+        }
+    });
+    var expenseIds = [];
+    get_1.getExpenses(sheetId).forEach(function (expense) {
+        if (!expense.id || !expense.paymentTypeId)
+            throw types_1.ErrorType.AssertionError;
+        if (aliasIds.indexOf(expense.paymentTypeId.getValue()) !== -1) {
+            expenseIds.push(expense.id);
+        }
+    });
+    if (incomeIds.length > 0) {
+        update_1.updateIncome(incomeIds, undefined, undefined, undefined, types_1.repeat(newId, incomeIds.length), undefined, sheetId);
+    }
+    if (expenseIds.length > 0) {
+        update_1.updateExpense(expenseIds, undefined, undefined, undefined, types_1.repeat(newId, expenseIds.length), undefined, undefined, sheetId);
+    }
+    remove_1.removePaymentType(aliasIds.map(function (n) { return new types_1.IntData(n); }), sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.mergePaymentType = mergePaymentType;
+function mergeRecipient(aliases, name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var aliasList = aliases.toLowerCase().split('\n');
+    var i = aliasList.indexOf(name.toLowerCase());
+    if (i !== -1) {
+        aliasList.splice(i, 1);
+    }
+    if (aliasList.length === 0 ||
+        (aliasList.length === 1 && aliasList[0].length === 0)) {
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
+        }
+        return;
+    }
+    var aliasIds = get_1.getRecipientIds(aliasList.map(function (s) { return new types_1.StringData(s); }), sheetId).map(function (n) { return n.getValue(); });
+    var newId = get_1.getRecipientIds([new types_1.StringData(name.toLowerCase())], sheetId)[0];
+    var expenseIds = [];
+    get_1.getExpenses(sheetId).forEach(function (expense) {
+        if (!expense.id || !expense.recipientId)
+            throw types_1.ErrorType.AssertionError;
+        if (aliasIds.indexOf(expense.recipientId.getValue()) !== -1) {
+            expenseIds.push(expense.id);
+        }
+    });
+    if (expenseIds.length > 0) {
+        update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, types_1.repeat(newId, expenseIds.length), undefined, sheetId);
+    }
+    remove_1.removeRecipient(aliasIds.map(function (n) { return new types_1.IntData(n); }), sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.mergeRecipient = mergeRecipient;
+function pollNotification(title, deadline, link, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    email_1.emailPollNotification(title, new Date(deadline), link, sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast('Emails sent', 'Success', 5);
+    }
+}
+exports.pollNotification = pollNotification;
+function notifyMembers(memberNames, subject, body, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var memberList = memberNames.toLowerCase().split('\n').map(function (name) { return new types_1.StringData(name); });
+    email_1.emailMembers(memberList, subject, body, sheetId);
+    if (toastMsg) {
+        SpreadsheetApp.openById(viewsId_1.ID).toast('Emails sent', 'Success', 5);
+    }
+}
+exports.notifyMembers = notifyMembers;
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+exports.__esModule = true;
+var actions_1 = __webpack_require__(24);
 var disable_1 = __webpack_require__(4);
-var refresh_1 = __webpack_require__(20);
+var refresh_1 = __webpack_require__(21);
 var ae_1 = __webpack_require__(5);
 var ai_1 = __webpack_require__(6);
 var ami_1 = __webpack_require__(7);
@@ -3540,13 +4157,13 @@ var tf_1 = __webpack_require__(13);
 var ucs_1 = __webpack_require__(14);
 var ums_1 = __webpack_require__(15);
 var viewsId_1 = __webpack_require__(16);
-var projectInfo_1 = __webpack_require__(19);
+var projectInfo_1 = __webpack_require__(20);
 var tableOps_1 = __webpack_require__(1);
-var backup_1 = __webpack_require__(25);
+var backup_1 = __webpack_require__(27);
 var types_1 = __webpack_require__(0);
-var handlers_1 = __webpack_require__(27);
+var handlers_1 = __webpack_require__(25);
 var html_1 = __webpack_require__(29);
-var refresh_2 = __webpack_require__(21);
+var refresh_2 = __webpack_require__(22);
 function initializeAll() {
     initializeTables();
     initializeViews();
@@ -4279,13 +4896,13 @@ exports.handleNotifyMembers = handleNotifyMembers;
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 exports.__esModule = true;
-var backupFolderId_1 = __webpack_require__(26);
+var backupFolderId_1 = __webpack_require__(28);
 var tablesId_1 = __webpack_require__(3);
 var tableOps_1 = __webpack_require__(1);
 function createBackup() {
@@ -4308,492 +4925,13 @@ exports.createBackup = createBackup;
 
 
 /***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-exports.__esModule = true;
-exports.ID = '1CpTZbSY6LdeVQPzfUuPONtdwOYNUnwGG';
-
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
-    if (m) return m.call(o);
-    return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-};
-exports.__esModule = true;
-var email_1 = __webpack_require__(18);
-var viewsId_1 = __webpack_require__(16);
-var append_1 = __webpack_require__(17);
-var get_1 = __webpack_require__(2);
-var remove_1 = __webpack_require__(28);
-var update_1 = __webpack_require__(22);
-var types_1 = __webpack_require__(0);
-function menuAddMember(name, dateJoined) {
-    var nameData = new types_1.StringData(name.toLowerCase());
-    var date = types_1.DateData.create(dateJoined);
-    try {
-        get_1.getMemberIds([nameData]);
-        SpreadsheetApp.openById(viewsId_1.ID).toast('Name is already in use', 'Adding Failed', 5);
-    }
-    catch (e) {
-        if (e === types_1.ErrorType.NoMatchFoundError) {
-            append_1.appendMember([nameData], [date], [new types_1.IntData(0)], [new types_1.StringData('')], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE], [types_1.BooleanData.FALSE]);
-            SpreadsheetApp.openById(viewsId_1.ID).toast("Added Member", 'Success', 5);
-            types_1.RefreshLogger.refresh();
-        }
-        else {
-            SpreadsheetApp.openById(viewsId_1.ID).toast('Check error log for details', 'Adding Failed', 5);
-            throw e;
-        }
-    }
-}
-exports.menuAddMember = menuAddMember;
-function menuAddAttendance(date, members, quarter, year) {
-    try {
-        var dateAsData = types_1.DateData.create(date);
-        var memberIds = new types_1.IntListData(members
-            .split(',')
-            .map(function (s) { return new types_1.IntData(parseInt(s)); })
-            .sort(function (a, b) { return a.getValue() - b.getValue(); }));
-        var quarterVal = void 0;
-        switch (quarter) {
-            case 'Winter':
-                quarterVal = types_1.Quarter.WINTER;
-                break;
-            case 'Spring':
-                quarterVal = types_1.Quarter.SPRING;
-                break;
-            case 'Summer':
-                quarterVal = types_1.Quarter.SUMMER;
-                break;
-            case 'Fall':
-                quarterVal = types_1.Quarter.FALL;
-                break;
-            default:
-                throw types_1.ErrorType.IllegalArgumentError;
-        }
-        var quarterId = new types_1.QuarterData(quarterVal, types_1.IntData.create(year));
-        append_1.appendAttendance([dateAsData], [memberIds], [quarterId]);
-    }
-    catch (e) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
-        throw e;
-    }
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Added new attendance record", 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.menuAddAttendance = menuAddAttendance;
-function menuAddIncome(date, amount, description, payType) {
-    try {
-        var payId = get_1.getPaymentTypeIds([new types_1.StringData(payType.toLowerCase())])[0];
-        var amountVal = parseFloat(amount);
-        if (isNaN(amountVal))
-            throw types_1.ErrorType.IllegalArgumentError;
-        append_1.appendIncome([types_1.DateData.create(date)], [new types_1.IntData(Math.round(amountVal * 100))], [types_1.StringData.create(description)], [payId], [new types_1.IntData(-1)]);
-    }
-    catch (e) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
-        throw e;
-    }
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Added new income", 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.menuAddIncome = menuAddIncome;
-function menuAddExpense(date, amount, description, recipient, payType) {
-    try {
-        var payId = get_1.getPaymentTypeIds([new types_1.StringData(payType.toLowerCase())])[0];
-        var amountVal = parseFloat(amount);
-        if (isNaN(amountVal))
-            throw types_1.ErrorType.IllegalArgumentError;
-        var recipientData = new types_1.StringData(recipient.toLowerCase());
-        var recipientId = void 0;
-        try {
-            recipientId = get_1.getRecipientIds([recipientData])[0];
-        }
-        catch (e) {
-            if (e === types_1.ErrorType.NoMatchFoundError) {
-                recipientId = append_1.appendRecipient([recipientData])[0];
-            }
-            else {
-                throw e;
-            }
-        }
-        append_1.appendExpense([types_1.DateData.create(date)], [new types_1.IntData(Math.round(amountVal * 100))], [types_1.StringData.create(description)], [payId], [recipientId], [new types_1.IntData(-1)]);
-    }
-    catch (e) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
-        throw e;
-    }
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Added new expense", 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.menuAddExpense = menuAddExpense;
-function menuAddStatement(date, incomes, expenses) {
-    try {
-        if (incomes.length === 0 && expenses.length === 0) {
-            SpreadsheetApp.openById(viewsId_1.ID).toast("No incomes or expenses were specified", 'No Change', 5);
-            return;
-        }
-        var statementId = append_1.appendStatement([types_1.DateData.create(date)], [types_1.BooleanData.FALSE])[0];
-        if (incomes.length > 0) {
-            var incomeIds = incomes.split('\n').map(types_1.IntData.create);
-            update_1.updateIncome(incomeIds, undefined, undefined, undefined, undefined, types_1.repeat(statementId, incomeIds.length));
-        }
-        if (expenses.length > 0) {
-            var expenseIds = expenses.split('\n').map(types_1.IntData.create);
-            update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, undefined, types_1.repeat(statementId, expenseIds.length));
-        }
-    }
-    catch (e) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
-        throw e;
-    }
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Added new statement", 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.menuAddStatement = menuAddStatement;
-function menuAddPayType(name) {
-    try {
-        var nameData = types_1.StringData.create(name.toLowerCase());
-        try {
-            get_1.getPaymentTypeIds([nameData]);
-            SpreadsheetApp.openById(viewsId_1.ID).toast("Payment type already exists", 'Failed', 5);
-            return;
-        }
-        catch (e) {
-            if (e === types_1.ErrorType.NoMatchFoundError) {
-                append_1.appendPaymentType([nameData]);
-            }
-            else {
-                throw e;
-            }
-        }
-    }
-    catch (e) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
-        throw e;
-    }
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Added new payment type", 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.menuAddPayType = menuAddPayType;
-function menuAddRecipient(name) {
-    try {
-        var nameData = types_1.StringData.create(name.toLowerCase());
-        try {
-            get_1.getRecipientIds([nameData]);
-            SpreadsheetApp.openById(viewsId_1.ID).toast("Recipient already exists", 'Failed', 5);
-            return;
-        }
-        catch (e) {
-            if (e === types_1.ErrorType.NoMatchFoundError) {
-                append_1.appendRecipient([nameData]);
-            }
-            else {
-                throw e;
-            }
-        }
-    }
-    catch (e) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Check logs for details", 'Failed', 5);
-        throw e;
-    }
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Added new recipient", 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.menuAddRecipient = menuAddRecipient;
-function rename(oldName, newName, nameToIdFn, updateFn) {
-    var oldNameData = new types_1.StringData(oldName.toLowerCase());
-    var newNameData = new types_1.StringData(newName.toLowerCase());
-    var noMatch = false;
-    try {
-        nameToIdFn([newNameData]);
-    }
-    catch (e) {
-        if (e === types_1.ErrorType.NoMatchFoundError) {
-            noMatch = true;
-        }
-        else {
-            throw e;
-        }
-    }
-    if (!noMatch) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast('New name is already in use, try merging instead', 'Renaming Failed', 5);
-    }
-    else {
-        var id = nameToIdFn([oldNameData])[0];
-        updateFn([id], [newNameData]);
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Renamed " + oldName + " to " + newName, 'Success', 5);
-    }
-    types_1.RefreshLogger.refresh();
-}
-function renameMember(oldName, newName) {
-    rename(oldName, newName, get_1.getMemberIds, update_1.updateMember);
-}
-exports.renameMember = renameMember;
-function renamePaymentType(oldName, newName) {
-    rename(oldName, newName, get_1.getPaymentTypeIds, update_1.updatePaymentType);
-}
-exports.renamePaymentType = renamePaymentType;
-function renameRecipient(oldName, newName) {
-    rename(oldName, newName, get_1.getRecipientIds, update_1.updateRecipient);
-}
-exports.renameRecipient = renameRecipient;
-function mergeMember(aliases, name) {
-    var aliasList = aliases.toLowerCase().split('\n');
-    var i = aliasList.indexOf(name.toLowerCase());
-    if (i !== -1) {
-        aliasList.splice(i, 1);
-    }
-    if (aliasList.length === 0 ||
-        (aliasList.length === 1 && aliasList[0].length === 0)) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
-        return;
-    }
-    var aliasIds = get_1.getMemberIds(aliasList.map(function (s) { return new types_1.StringData(s); })).map(function (n) { return n.getValue(); });
-    var newId = get_1.getMemberIds([new types_1.StringData(name.toLowerCase())])[0];
-    var updateData = {
-        ids: [],
-        memIds: []
-    };
-    get_1.getAttendances().forEach(function (attendance) {
-        if (!attendance.id || !attendance.member_ids)
-            throw types_1.ErrorType.AssertionError;
-        var curIds = attendance.member_ids.getValue().map(function (n) { return n.getValue(); });
-        var prunedIds = curIds.filter(function (id) { return aliasIds.indexOf(id) === -1; });
-        if (prunedIds.length < curIds.length) {
-            if (prunedIds.indexOf(newId.getValue()) === -1) {
-                prunedIds.push(newId.getValue());
-                prunedIds.sort();
-            }
-            updateData.ids.push(attendance.id);
-            updateData.memIds.push(new types_1.IntListData(prunedIds.map(function (id) { return new types_1.IntData(id); })));
-        }
-    });
-    if (updateData.ids.length > 0) {
-        update_1.updateAttendance(updateData.ids, undefined, updateData.memIds);
-    }
-    remove_1.removeMember(aliasIds.map(function (n) { return new types_1.IntData(n); }));
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.mergeMember = mergeMember;
-function mergePaymentType(aliases, name) {
-    var aliasList = aliases.toLowerCase().split('\n');
-    var i = aliasList.indexOf(name.toLowerCase());
-    if (i !== -1) {
-        aliasList.splice(i, 1);
-    }
-    if (aliasList.length === 0 ||
-        (aliasList.length === 1 && aliasList[0].length === 0)) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
-        return;
-    }
-    var aliasIds = get_1.getPaymentTypeIds(aliasList.map(function (s) { return new types_1.StringData(s); })).map(function (n) { return n.getValue(); });
-    var newId = get_1.getPaymentTypeIds([new types_1.StringData(name.toLowerCase())])[0];
-    var incomeIds = [];
-    get_1.getIncomes().forEach(function (income) {
-        if (!income.id || !income.paymentTypeId)
-            throw types_1.ErrorType.AssertionError;
-        if (aliasIds.indexOf(income.paymentTypeId.getValue()) !== -1) {
-            incomeIds.push(income.id);
-        }
-    });
-    var expenseIds = [];
-    get_1.getExpenses().forEach(function (expense) {
-        if (!expense.id || !expense.paymentTypeId)
-            throw types_1.ErrorType.AssertionError;
-        if (aliasIds.indexOf(expense.paymentTypeId.getValue()) !== -1) {
-            expenseIds.push(expense.id);
-        }
-    });
-    if (incomeIds.length > 0) {
-        update_1.updateIncome(incomeIds, undefined, undefined, undefined, types_1.repeat(newId, incomeIds.length));
-    }
-    if (expenseIds.length > 0) {
-        update_1.updateExpense(expenseIds, undefined, undefined, undefined, types_1.repeat(newId, expenseIds.length));
-    }
-    remove_1.removePaymentType(aliasIds.map(function (n) { return new types_1.IntData(n); }));
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.mergePaymentType = mergePaymentType;
-function mergeRecipient(aliases, name) {
-    var aliasList = aliases.toLowerCase().split('\n');
-    var i = aliasList.indexOf(name.toLowerCase());
-    if (i !== -1) {
-        aliasList.splice(i, 1);
-    }
-    if (aliasList.length === 0 ||
-        (aliasList.length === 1 && aliasList[0].length === 0)) {
-        SpreadsheetApp.openById(viewsId_1.ID).toast("Either you selected no aliases or selected the same alias and name", 'No Action Taken', 5);
-        return;
-    }
-    var aliasIds = get_1.getRecipientIds(aliasList.map(function (s) { return new types_1.StringData(s); })).map(function (n) { return n.getValue(); });
-    var newId = get_1.getRecipientIds([new types_1.StringData(name.toLowerCase())])[0];
-    var expenseIds = [];
-    get_1.getExpenses().forEach(function (expense) {
-        if (!expense.id || !expense.recipientId)
-            throw types_1.ErrorType.AssertionError;
-        if (aliasIds.indexOf(expense.recipientId.getValue()) !== -1) {
-            expenseIds.push(expense.id);
-        }
-    });
-    if (expenseIds.length > 0) {
-        update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, types_1.repeat(newId, expenseIds.length));
-    }
-    remove_1.removeRecipient(aliasIds.map(function (n) { return new types_1.IntData(n); }));
-    SpreadsheetApp.openById(viewsId_1.ID).toast("Merged into " + name, 'Success', 5);
-    types_1.RefreshLogger.refresh();
-}
-exports.mergeRecipient = mergeRecipient;
-function pollNotification(title, deadline, link) {
-    email_1.emailPollNotification(title, new Date(deadline), link);
-    SpreadsheetApp.openById(viewsId_1.ID).toast('Emails sent', 'Success', 5);
-}
-exports.pollNotification = pollNotification;
-function notifyMembers(memberNames, subject, body) {
-    var e_1, _a;
-    var memberList = memberNames.toLowerCase().split('\n');
-    var members = get_1.getMembers();
-    var emails = [];
-    var startIndex = 0;
-    try {
-        for (var memberList_1 = __values(memberList), memberList_1_1 = memberList_1.next(); !memberList_1_1.done; memberList_1_1 = memberList_1.next()) {
-            var name = memberList_1_1.value;
-            var i = startIndex;
-            do {
-                var curName = members[i].name;
-                var curEmail = members[i].email;
-                if (!curName || !curEmail) {
-                    throw types_1.ErrorType.AssertionError;
-                }
-                else if (curName.getValue() === name) {
-                    emails.push(curEmail.getValue());
-                    startIndex = i;
-                    break;
-                }
-                i = (i + 1) % members.length;
-            } while (i !== startIndex);
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (memberList_1_1 && !memberList_1_1.done && (_a = memberList_1["return"])) _a.call(memberList_1);
-        }
-        finally { if (e_1) throw e_1.error; }
-    }
-    emails.map(function (email) { return GmailApp.sendEmail(email, subject, body); });
-    SpreadsheetApp.openById(viewsId_1.ID).toast('Emails sent', 'Success', 5);
-}
-exports.notifyMembers = notifyMembers;
-
-
-/***/ }),
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 exports.__esModule = true;
-var tablesId_1 = __webpack_require__(3);
-var tableOps_1 = __webpack_require__(1);
-var types_1 = __webpack_require__(0);
-function removeMember(id, name, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Member');
-    if (!id) {
-        if (!name) {
-            throw types_1.ErrorType.IllegalArgumentError;
-        }
-        id = tableOps_1.getIdsFromFields(sheet, ['name'], name.map(function (s) { return [s]; }));
-    }
-    var entries = id.map(function (i) { return new types_1.MemberEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.MEMBER);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeMember = removeMember;
-function removeIncome(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Income');
-    var entries = id.map(function (i) { return new types_1.IncomeEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.INCOME);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeIncome = removeIncome;
-function removeExpense(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Expense');
-    var entries = id.map(function (i) { return new types_1.ExpenseEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.EXPENSE);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeExpense = removeExpense;
-function removeRecipient(id, name, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Recipient');
-    if (!id) {
-        if (!name) {
-            throw types_1.ErrorType.IllegalArgumentError;
-        }
-        id = tableOps_1.getIdsFromFields(sheet, ['name'], name.map(function (s) { return [s]; }));
-    }
-    var entries = id.map(function (i) { return new types_1.RecipientEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.RECIPIENT);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeRecipient = removeRecipient;
-function removePaymentType(id, name, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('PaymentType');
-    if (!id) {
-        if (!name) {
-            throw types_1.ErrorType.IllegalArgumentError;
-        }
-        id = tableOps_1.getIdsFromFields(sheet, ['name'], name.map(function (s) { return [s]; }));
-    }
-    var entries = id.map(function (i) { return new types_1.PaymentTypeEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.PAYMENT_TYPE);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removePaymentType = removePaymentType;
-function removeStatement(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Statement');
-    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.STATEMENT);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeStatement = removeStatement;
-function removeAttendance(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Attendance');
-    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.ATTENDANCE);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeAttendance = removeAttendance;
+exports.ID = '1CpTZbSY6LdeVQPzfUuPONtdwOYNUnwGG';
 
 
 /***/ }),
