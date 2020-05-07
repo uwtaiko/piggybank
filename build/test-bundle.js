@@ -126,8 +126,8 @@ var __spread = (this && this.__spread) || function () {
 };
 exports.__esModule = true;
 var disable_1 = __webpack_require__(4);
-var refresh_1 = __webpack_require__(21);
-var refresh_2 = __webpack_require__(22);
+var refresh_1 = __webpack_require__(23);
+var refresh_2 = __webpack_require__(24);
 var ErrorType = (function () {
     function ErrorType() {
     }
@@ -223,6 +223,16 @@ var GeneratedTable = (function (_super) {
     function GeneratedTable(name, refreshFn) {
         return _super.call(this, name, refreshFn) || this;
     }
+    GeneratedTable.getAll = function () {
+        return [
+            GeneratedTable.ACCOUNT_INFO,
+            GeneratedTable.MEMBERS,
+            GeneratedTable.INCOMES,
+            GeneratedTable.EXPENSES,
+            GeneratedTable.ALL_TRANSACTIONS,
+            GeneratedTable.STATEMENTS,
+        ];
+    };
     GeneratedTable.ACCOUNT_INFO = new GeneratedTable('Account Info', refresh_2.refreshAccountInfo);
     GeneratedTable.MEMBERS = new GeneratedTable('Members', refresh_2.refreshMembers);
     GeneratedTable.INCOMES = new GeneratedTable('Incomes', refresh_2.refreshIncomes);
@@ -237,6 +247,21 @@ var GeneratedForm = (function (_super) {
     function GeneratedForm(name, refreshFn) {
         return _super.call(this, name, refreshFn) || this;
     }
+    GeneratedForm.getAll = function () {
+        return [
+            GeneratedForm.ADD_EXPENSE,
+            GeneratedForm.ADD_INCOME,
+            GeneratedForm.ADD_MEMBER_IOU,
+            GeneratedForm.COLLECT_DUES,
+            GeneratedForm.CONFIRM_TRANSFER,
+            GeneratedForm.NEXT_QUARTER,
+            GeneratedForm.RESOLVE_MEMBER_IOU,
+            GeneratedForm.TAKE_ATTENDANCE,
+            GeneratedForm.TRANSFER_FUNDS,
+            GeneratedForm.UPDATE_CONTACT_SETTINGS,
+            GeneratedForm.UPDATE_MEMBER_STATUS,
+        ];
+    };
     GeneratedForm.ADD_EXPENSE = new GeneratedForm('Add Expense', refresh_1.refreshAddExpense);
     GeneratedForm.ADD_INCOME = new GeneratedForm('Add Income', refresh_1.refreshAddIncome);
     GeneratedForm.ADD_MEMBER_IOU = new GeneratedForm('Add Member IOU', refresh_1.refreshAddMemberIou);
@@ -333,6 +358,26 @@ var RefreshLogger = (function () {
     };
     RefreshLogger.markAsPriority = function (form) {
         this.priorityForm = form;
+    };
+    RefreshLogger.refreshAll = function () {
+        var forms = GeneratedForm.getAll();
+        var tables = GeneratedTable.getAll();
+        var lock = LockService.getScriptLock();
+        lock.tryLock(2 * 60 * 1000);
+        if (!lock.hasLock()) {
+            console.log('Refresh cancelled, unable to get Lock.');
+            return;
+        }
+        try {
+            forms.forEach(function (form) { return disable_1.disableForm(form); });
+            tables.forEach(function (table) { return table.getRefreshFn()(); });
+            forms.forEach(function (form) { return form.getRefreshFn()(); });
+        }
+        catch (e) {
+            forms.forEach(function (form) { return disable_1.enableForm(form); });
+            throw e;
+        }
+        lock.releaseLock();
     };
     RefreshLogger.refresh = function () {
         var _this = this;
@@ -1901,6 +1946,7 @@ function sendEmails(emails, subject, body) {
 }
 function emailReceipts(memberNames, amount, description) {
     var e_1, _a;
+    memberNames = memberNames.map(function (name) { return new types_1.StringData(name.toString().toLowerCase()); });
     var members = get_1.getMembers();
     var emails = [];
     var startIndex = 0;
@@ -1938,21 +1984,23 @@ function emailReceipts(memberNames, amount, description) {
 exports.emailReceipts = emailReceipts;
 function emailIOUNotification(memberNames, amount, description) {
     var e_2, _a;
+    var inputNames = memberNames.map(function (name) { return name.toString().toLowerCase(); });
     var members = get_1.getMembers();
     var emails = [];
     var startIndex = 0;
     try {
-        for (var memberNames_2 = __values(memberNames), memberNames_2_1 = memberNames_2.next(); !memberNames_2_1.done; memberNames_2_1 = memberNames_2.next()) {
-            var name = memberNames_2_1.value;
+        for (var inputNames_1 = __values(inputNames), inputNames_1_1 = inputNames_1.next(); !inputNames_1_1.done; inputNames_1_1 = inputNames_1.next()) {
+            var name = inputNames_1_1.value;
             var i = startIndex;
             do {
                 var curName = members[i].name;
                 var curEmail = members[i].email;
-                if (!curName || !curEmail) {
+                var curSendReceipt = members[i].sendReceipt;
+                if (!curName || !curEmail || !curSendReceipt) {
                     throw types_1.ErrorType.AssertionError;
                 }
-                else if (curName.toString() === name.toString()) {
-                    if (curEmail.getValue().length !== 0) {
+                else if (curName.toString() === name) {
+                    if (curSendReceipt.getValue() || curEmail.getValue().length !== 0) {
                         emails.push(curEmail.getValue());
                     }
                     startIndex = i;
@@ -1965,7 +2013,7 @@ function emailIOUNotification(memberNames, amount, description) {
     catch (e_2_1) { e_2 = { error: e_2_1 }; }
     finally {
         try {
-            if (memberNames_2_1 && !memberNames_2_1.done && (_a = memberNames_2["return"])) _a.call(memberNames_2);
+            if (inputNames_1_1 && !inputNames_1_1.done && (_a = inputNames_1["return"])) _a.call(inputNames_1);
         }
         finally { if (e_2) throw e_2.error; }
     }
@@ -1981,7 +2029,7 @@ function emailPollNotification(pollName, deadline, link, sheetId) {
             var member = members_1_1.value;
             if (!member.email || !member.active || !member.performing || !member.notifyPoll)
                 throw types_1.ErrorType.AssertionError;
-            if (member.active.getValue() && member.notifyPoll.getValue()) {
+            if (member.active.getValue() && member.notifyPoll.getValue() && member.email.getValue() !== '') {
                 emails.push(member.email.getValue());
             }
         }
@@ -2069,12 +2117,13 @@ function emailPollNotification(pollName, deadline, link, sheetId) {
 exports.emailPollNotification = emailPollNotification;
 function emailMembers(memberList, subject, body, sheetId) {
     var e_4, _a;
+    var inputNames = memberList.map(function (name) { return name.toString().toLowerCase(); });
     var members = get_1.getMembers(sheetId);
     var emails = [];
     var startIndex = 0;
     try {
-        for (var memberList_1 = __values(memberList), memberList_1_1 = memberList_1.next(); !memberList_1_1.done; memberList_1_1 = memberList_1.next()) {
-            var name = memberList_1_1.value;
+        for (var inputNames_2 = __values(inputNames), inputNames_2_1 = inputNames_2.next(); !inputNames_2_1.done; inputNames_2_1 = inputNames_2.next()) {
+            var name = inputNames_2_1.value;
             var i = startIndex;
             do {
                 var curName = members[i].name;
@@ -2082,7 +2131,7 @@ function emailMembers(memberList, subject, body, sheetId) {
                 if (!curName || !curEmail) {
                     throw types_1.ErrorType.AssertionError;
                 }
-                else if (curName.getValue() === name.getValue()) {
+                else if (curName.getValue() === name && curEmail.getValue() !== '') {
                     emails.push(curEmail.getValue());
                     startIndex = i;
                     break;
@@ -2094,7 +2143,7 @@ function emailMembers(memberList, subject, body, sheetId) {
     catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
-            if (memberList_1_1 && !memberList_1_1.done && (_a = memberList_1["return"])) _a.call(memberList_1);
+            if (inputNames_2_1 && !inputNames_2_1.done && (_a = inputNames_2["return"])) _a.call(inputNames_2);
         }
         finally { if (e_4) throw e_4.error; }
     }
@@ -2120,6 +2169,440 @@ exports.NUM_ATTNS = '';
 
 /***/ }),
 /* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+exports.__esModule = true;
+var tablesId_1 = __webpack_require__(3);
+var tableOps_1 = __webpack_require__(1);
+var types_1 = __webpack_require__(0);
+function removeMember(id, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Member');
+    var entries = id.map(function (i) { return new types_1.MemberEntry(i); });
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.MEMBER);
+    tableOps_1.remove(sheet, entries);
+}
+exports.removeMember = removeMember;
+function removeIncome(id, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Income');
+    var entries = id.map(function (i) { return new types_1.IncomeEntry(i); });
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.INCOME);
+    tableOps_1.remove(sheet, entries);
+}
+exports.removeIncome = removeIncome;
+function removeExpense(id, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Expense');
+    var entries = id.map(function (i) { return new types_1.ExpenseEntry(i); });
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.EXPENSE);
+    tableOps_1.remove(sheet, entries);
+}
+exports.removeExpense = removeExpense;
+function removeRecipient(id, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Recipient');
+    var entries = id.map(function (i) { return new types_1.RecipientEntry(i); });
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.RECIPIENT);
+    tableOps_1.remove(sheet, entries);
+}
+exports.removeRecipient = removeRecipient;
+function removePaymentType(id, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('PaymentType');
+    var entries = id.map(function (i) { return new types_1.PaymentTypeEntry(i); });
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.PAYMENT_TYPE);
+    tableOps_1.remove(sheet, entries);
+}
+exports.removePaymentType = removePaymentType;
+function removeStatement(id, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Statement');
+    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.STATEMENT);
+    tableOps_1.remove(sheet, entries);
+}
+exports.removeStatement = removeStatement;
+function removeAttendance(id, sheetId) {
+    var sheet = sheetId ?
+        SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
+        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Attendance');
+    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
+    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.ATTENDANCE);
+    tableOps_1.remove(sheet, entries);
+}
+exports.removeAttendance = removeAttendance;
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __values = (this && this.__values) || function (o) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    if (m) return m.call(o);
+    return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+};
+exports.__esModule = true;
+var email_1 = __webpack_require__(19);
+var append_1 = __webpack_require__(17);
+var get_1 = __webpack_require__(2);
+var update_1 = __webpack_require__(18);
+var types_1 = __webpack_require__(0);
+function getAmountOwed(memberNames, sheetId) {
+    var e_1, _a;
+    var members = get_1.getMembers(sheetId);
+    var owed = [];
+    var startIndex = 0;
+    try {
+        for (var memberNames_1 = __values(memberNames), memberNames_1_1 = memberNames_1.next(); !memberNames_1_1.done; memberNames_1_1 = memberNames_1.next()) {
+            var name = memberNames_1_1.value;
+            var i = startIndex;
+            do {
+                var curName = members[i].name;
+                var curOwed = members[i].amountOwed;
+                if (!curName || !curOwed) {
+                    throw types_1.ErrorType.AssertionError;
+                }
+                else if (curName.toString() === name.toString()) {
+                    owed.push(curOwed);
+                    startIndex = i;
+                    break;
+                }
+                i = (i + 1) % members.length;
+            } while (i !== startIndex);
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (memberNames_1_1 && !memberNames_1_1.done && (_a = memberNames_1["return"])) _a.call(memberNames_1);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    if (owed.length !== memberNames.length) {
+        throw types_1.ErrorType.NoMatchFoundError;
+    }
+    return owed;
+}
+function getDuesValues(memberNames, sheetId) {
+    var e_2, _a;
+    var clubInfo = get_1.getClubInfo(sheetId);
+    var members = get_1.getMembers(sheetId);
+    var duesVals = [];
+    var startIndex = 0;
+    try {
+        for (var memberNames_2 = __values(memberNames), memberNames_2_1 = memberNames_2.next(); !memberNames_2_1.done; memberNames_2_1 = memberNames_2.next()) {
+            var name = memberNames_2_1.value;
+            var i = startIndex;
+            do {
+                var curName = members[i].name;
+                var curOfficer = members[i].officer;
+                if (!curName || !curOfficer) {
+                    throw types_1.ErrorType.AssertionError;
+                }
+                else if (curName.toString() === name.toString()) {
+                    duesVals.push(curOfficer.getValue() ? clubInfo.officerFee : clubInfo.memberFee);
+                    startIndex = i;
+                    break;
+                }
+                i = (i + 1) % members.length;
+            } while (i !== startIndex);
+        }
+    }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    finally {
+        try {
+            if (memberNames_2_1 && !memberNames_2_1.done && (_a = memberNames_2["return"])) _a.call(memberNames_2);
+        }
+        finally { if (e_2) throw e_2.error; }
+    }
+    return duesVals;
+}
+function yesnoToBool(yesno) {
+    switch (yesno) {
+        case 'Yes':
+            return types_1.BooleanData.TRUE;
+        case 'No':
+            return types_1.BooleanData.FALSE;
+        default:
+            throw types_1.ErrorType.IllegalArgumentError;
+    }
+}
+function addExpense(amountRes, description, recipient, paymentType, sheetId) {
+    var today = new types_1.DateData(new Date());
+    var recipientData = new types_1.StringData(recipient.trim().toLowerCase());
+    var payTypeData = new types_1.StringData(paymentType.trim().toLowerCase());
+    var payTypeId;
+    try {
+        payTypeId = get_1.getPaymentTypeIds([payTypeData], sheetId)[0];
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            payTypeId = append_1.appendPaymentType([payTypeData], sheetId)[0];
+        }
+        else {
+            throw e;
+        }
+    }
+    var recipientId;
+    try {
+        recipientId = get_1.getRecipientIds([recipientData], sheetId)[0];
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            recipientId = append_1.appendRecipient([recipientData], sheetId)[0];
+        }
+        else {
+            throw e;
+        }
+    }
+    var amount = parseFloat(amountRes);
+    if (isNaN(amount)) {
+        throw "parseFloat error: Unable to parse amount given";
+    }
+    append_1.appendExpense([today], [new types_1.IntData(Math.round(amount * 100))], [new types_1.StringData(description)], [payTypeId], [recipientId], [new types_1.IntData(-1)], sheetId);
+}
+exports.addExpense = addExpense;
+function addIncome(amountRes, description, paymentType, sheetId) {
+    var today = new types_1.DateData(new Date());
+    var payTypeData = new types_1.StringData(paymentType.trim().toLowerCase());
+    var payTypeId;
+    try {
+        payTypeId = get_1.getPaymentTypeIds([payTypeData], sheetId)[0];
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            payTypeId = append_1.appendPaymentType([payTypeData], sheetId)[0];
+        }
+        else {
+            throw e;
+        }
+    }
+    var amount = parseFloat(amountRes);
+    if (isNaN(amount)) {
+        throw "parseFloat error: Unable to parse amount given";
+    }
+    append_1.appendIncome([today], [new types_1.IntData(Math.round(amount * 100))], [new types_1.StringData(description)], [payTypeId], [new types_1.IntData(-1)], sheetId);
+}
+exports.addIncome = addIncome;
+function addMemberIOU(membersRes, amountRes, description, sheetId) {
+    var memberNames = membersRes.map(function (member) { return new types_1.StringData(member.substr(0, member.indexOf(':')).toLowerCase()); });
+    if (!sheetId) {
+        email_1.emailIOUNotification(memberNames.map(function (member) { return new types_1.StringData(types_1.capitalizeString(member.getValue())); }), amountRes, description);
+    }
+    var memberIds = get_1.getMemberIds(memberNames, sheetId);
+    var amount = parseFloat(amountRes);
+    if (isNaN(amount)) {
+        throw "parseFloat error: Unable to parse amount given";
+    }
+    var amountCents = Math.round(amount * 100);
+    var curOwed = getAmountOwed(memberNames, sheetId);
+    update_1.updateMember(memberIds, undefined, undefined, curOwed.map(function (cur) { return new types_1.IntData(cur.getValue() + amountCents); }), undefined, undefined, undefined, undefined, undefined, undefined, undefined, sheetId);
+}
+exports.addMemberIOU = addMemberIOU;
+function collectDues(memListRes, paymentTypeRes, sheetId) {
+    memListRes = memListRes.map(function (res) { return res.substr(0, res.indexOf(':')); });
+    var curQuarter = get_1.getClubInfo(sheetId).currentQuarterId;
+    var members = memListRes.map(function (name) { return new types_1.StringData(name.toLowerCase()); });
+    var descriptions = memListRes.map(function (name) { return new types_1.StringData(name + ", dues for " + curQuarter.toDateString()); });
+    var paymentType = new types_1.StringData(paymentTypeRes.trim().toLowerCase());
+    var today = new types_1.DateData(new Date());
+    var memberIds = get_1.getMemberIds(members, sheetId);
+    update_1.updateMember(memberIds, undefined, undefined, undefined, undefined, undefined, undefined, undefined, types_1.repeat(types_1.BooleanData.TRUE, members.length), undefined, undefined, sheetId);
+    var duesAmounts = getDuesValues(members, sheetId);
+    var payTypeId;
+    try {
+        payTypeId = get_1.getPaymentTypeIds([paymentType], sheetId)[0];
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            payTypeId = append_1.appendPaymentType([paymentType], sheetId)[0];
+        }
+        else {
+            throw e;
+        }
+    }
+    if (!sheetId) {
+        for (var i = 0; i < members.length; ++i) {
+            email_1.emailReceipts([new types_1.StringData(types_1.capitalizeString(members[i].getValue()))], (duesAmounts[i].getValue() / 100).toString(), descriptions[i].toString());
+        }
+    }
+    append_1.appendIncome(types_1.repeat(today, members.length), duesAmounts, descriptions, types_1.repeat(payTypeId, members.length), types_1.repeat(new types_1.IntData(-1), members.length), sheetId);
+}
+exports.collectDues = collectDues;
+function confirmTransfer(statementList, sheetId) {
+    var ids = statementList.map(function (s) {
+        var start = s.lastIndexOf('[');
+        var end = s.lastIndexOf(']');
+        return types_1.IntData.create(s.substr(start + 1, end - start - 1));
+    });
+    update_1.updateStatement(ids, undefined, types_1.repeat(types_1.BooleanData.TRUE, ids.length), sheetId);
+}
+exports.confirmTransfer = confirmTransfer;
+function nextQuarter(sheetId) {
+    var clubInfo = get_1.getClubInfo(sheetId);
+    var ids = get_1.getMembers(sheetId).map(function (member) {
+        if (!member.id)
+            throw types_1.ErrorType.AssertionError;
+        return member.id;
+    });
+    update_1.updateClubInfo(undefined, undefined, undefined, clubInfo.currentQuarterId.next(), sheetId);
+    update_1.updateMember(ids, undefined, undefined, undefined, undefined, undefined, undefined, undefined, types_1.repeat(types_1.BooleanData.FALSE, ids.length), undefined, undefined, sheetId);
+}
+exports.nextQuarter = nextQuarter;
+function resolveMemberIOU(membersRes, amount, description, paymentType, sheetId) {
+    var memberNames = membersRes.map(function (member) { return new types_1.StringData(member.substr(0, member.indexOf(':')).toLowerCase()); });
+    if (!sheetId) {
+        email_1.emailReceipts(memberNames.map(function (member) { return new types_1.StringData(types_1.capitalizeString(member.getValue())); }), amount, description);
+    }
+    var memberIds = get_1.getMemberIds(memberNames, sheetId);
+    var amountCents = Math.round(parseFloat(amount) * 100);
+    var curOwed = getAmountOwed(memberNames, sheetId);
+    var payTypeData = new types_1.StringData(paymentType.trim().toLowerCase());
+    var payTypeId;
+    try {
+        payTypeId = get_1.getPaymentTypeIds([payTypeData], sheetId)[0];
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            payTypeId = append_1.appendPaymentType([payTypeData], sheetId)[0];
+        }
+        else {
+            throw e;
+        }
+    }
+    update_1.updateMember(memberIds, undefined, undefined, curOwed.map(function (cur) { return new types_1.IntData(cur.getValue() - amountCents); }), undefined, undefined, undefined, undefined, undefined, undefined, undefined, sheetId);
+    var today = new types_1.DateData(new Date());
+    append_1.appendIncome(types_1.repeat(today, memberNames.length), types_1.repeat(new types_1.IntData(amountCents), memberNames.length), memberNames.map(function (name) { return new types_1.StringData(types_1.capitalizeString(name.toString()) + ' ' + description + ' (debt)'); }), types_1.repeat(payTypeId, memberNames.length), types_1.repeat(new types_1.IntData(-1), memberNames.length), sheetId);
+}
+exports.resolveMemberIOU = resolveMemberIOU;
+function takeAttendance(memListRes, newMemberRes, sheetId) {
+    var e_3, _a;
+    if (!memListRes) {
+        if (!newMemberRes) {
+            return;
+        }
+        memListRes = [];
+    }
+    var curQuarter = get_1.getClubInfo(sheetId).currentQuarterId;
+    var today = new types_1.DateData(new Date());
+    var curNames = get_1.getMembers(sheetId).map(function (member) {
+        if (!member.name)
+            throw types_1.ErrorType.AssertionError;
+        return member.name.getValue();
+    });
+    memListRes = memListRes.map(function (name) { return name.toLowerCase(); });
+    var prevMembersData = memListRes.map(function (name) { return new types_1.StringData(name); });
+    var newMembersData = [];
+    var newIds;
+    if (newMemberRes === undefined) {
+        newIds = [];
+    }
+    else {
+        newMemberRes = newMemberRes.toLowerCase();
+        var newMembers = newMemberRes.split('\n').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; });
+        try {
+            for (var newMembers_1 = __values(newMembers), newMembers_1_1 = newMembers_1.next(); !newMembers_1_1.done; newMembers_1_1 = newMembers_1.next()) {
+                var member = newMembers_1_1.value;
+                if (curNames.indexOf(member) === -1) {
+                    newMembersData.push(new types_1.StringData(member));
+                }
+                else {
+                    memListRes.indexOf(member);
+                    prevMembersData.push(new types_1.StringData(member));
+                }
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (newMembers_1_1 && !newMembers_1_1.done && (_a = newMembers_1["return"])) _a.call(newMembers_1);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        if (newMembersData.length > 0) {
+            newIds = append_1.appendMember(newMembersData, types_1.repeat(today, newMembersData.length), types_1.repeat(new types_1.IntData(0), newMembersData.length), types_1.repeat(new types_1.StringData(''), newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.TRUE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), sheetId);
+        }
+        else {
+            newIds = [];
+        }
+    }
+    if (prevMembersData.length === 0) {
+        append_1.appendAttendance([today], [new types_1.IntListData(newIds)], [curQuarter], sheetId);
+    }
+    else {
+        var prevIds = get_1.getMemberIds(prevMembersData, sheetId);
+        prevIds.sort(function (valA, valB) { return valA.getValue() - valB.getValue(); });
+        append_1.appendAttendance([today], [new types_1.IntListData(prevIds.concat(newIds))], [curQuarter], sheetId);
+    }
+}
+exports.takeAttendance = takeAttendance;
+function transferFunds(incomes, expenses, sheetId) {
+    if (incomes || expenses) {
+        var today = new types_1.DateData(new Date());
+        var statementId = append_1.appendStatement([today], [types_1.BooleanData.FALSE], sheetId)[0];
+        if (incomes) {
+            var incomeIds = incomes.map(function (s) {
+                var start = s.lastIndexOf('[');
+                var end = s.lastIndexOf(']');
+                return types_1.IntData.create(s.substr(start + 1, end - start - 1));
+            });
+            update_1.updateIncome(incomeIds, undefined, undefined, undefined, undefined, types_1.repeat(statementId, incomeIds.length), sheetId);
+        }
+        if (expenses) {
+            var expenseIds = expenses.map(function (s) {
+                var start = s.lastIndexOf('[');
+                var end = s.lastIndexOf(']');
+                return types_1.IntData.create(s.substr(start + 1, end - start - 1));
+            });
+            update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, undefined, types_1.repeat(statementId, expenseIds.length), sheetId);
+        }
+    }
+}
+exports.transferFunds = transferFunds;
+function updateContactSettings(name, email, phone, carrier, notifyPoll, sendReceipt, sheetId) {
+    var memberData = new types_1.StringData(name.toLowerCase());
+    var memberId = get_1.getMemberIds([memberData], sheetId);
+    var emailData;
+    if (email) {
+        emailData = new types_1.StringData(email);
+    }
+    else if (phone && carrier) {
+        phone = phone.replace('-', '').replace('-', '');
+        var carrierSuffix = types_1.CARRIERS[carrier];
+        if (carrierSuffix === undefined)
+            throw types_1.ErrorType.AssertionError;
+        emailData = new types_1.StringData(phone.concat(carrierSuffix));
+    }
+    update_1.updateMember(memberId, undefined, undefined, undefined, emailData ? [emailData] : undefined, undefined, undefined, undefined, undefined, notifyPoll ? [yesnoToBool(notifyPoll)] : undefined, sendReceipt ? [yesnoToBool(sendReceipt)] : undefined, sheetId);
+}
+exports.updateContactSettings = updateContactSettings;
+function updateMemberStatus(memberNames, performingRes, activeRes, officerRes, sheetId) {
+    var memberData = memberNames.map(function (name) { return new types_1.StringData(name.toLowerCase()); });
+    var memberId = get_1.getMemberIds(memberData, sheetId);
+    update_1.updateMember(memberId, undefined, undefined, undefined, undefined, performingRes ? types_1.repeat(yesnoToBool(performingRes), memberId.length) : undefined, activeRes ? types_1.repeat(yesnoToBool(activeRes), memberId.length) : undefined, officerRes ? types_1.repeat(yesnoToBool(officerRes), memberId.length) : undefined, undefined, undefined, undefined, sheetId);
+}
+exports.updateMemberStatus = updateMemberStatus;
+
+
+/***/ }),
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2219,12 +2702,15 @@ function refreshAddIncome() {
 }
 exports.refreshAddIncome = refreshAddIncome;
 function refreshAddMemberIou() {
-    var memberNames = get_1.getMembers().map(function (entry) {
+    var memberNames = get_1.getMembers()
+        .filter(function (entry) { return entry.active && entry.active.getValue(); })
+        .map(function (entry) {
         if (!entry.name || !entry.amountOwed)
             throw types_1.ErrorType.AssertionError;
         var amount = types_1.centsToString(entry.amountOwed);
         return types_1.capitalizeString(entry.name.getValue()) + ': ' + amount;
-    }).sort();
+    })
+        .sort();
     var form = FormApp.openById(ami_1.ID);
     if (memberNames.length === 0) {
         form.addCheckboxItem()
@@ -2384,12 +2870,15 @@ function refreshNextQuarter() {
 }
 exports.refreshNextQuarter = refreshNextQuarter;
 function refreshResolveMemberIou() {
-    var memberNames = get_1.getMembers().map(function (entry) {
+    var memberNames = get_1.getMembers()
+        .filter(function (entry) { return entry.active && entry.active.getValue(); })
+        .map(function (entry) {
         if (!entry.name || !entry.amountOwed)
             throw types_1.ErrorType.AssertionError;
         var amount = types_1.centsToString(entry.amountOwed);
         return types_1.capitalizeString(entry.name.getValue()) + ': ' + amount;
-    }).sort();
+    })
+        .sort();
     var payTypes = get_1.getPaymentTypes().map(function (entry) {
         if (!entry.name)
             throw types_1.ErrorType.AssertionError;
@@ -2436,11 +2925,13 @@ function refreshResolveMemberIou() {
 }
 exports.refreshResolveMemberIou = refreshResolveMemberIou;
 function refreshTakeAttendance() {
-    var memberNames = get_1.getMembers().filter(function (entry) {
+    var memberNames = get_1.getMembers()
+        .filter(function (entry) {
         if (!entry.active)
             throw types_1.ErrorType.AssertionError;
         return entry.active.getValue();
-    }).sort(function (a, b) {
+    })
+        .sort(function (a, b) {
         if (!a.dateJoined || !a.name || !a.active ||
             !b.dateJoined || !b.name || !b.active) {
             throw types_1.ErrorType.AssertionError;
@@ -2453,7 +2944,8 @@ function refreshTakeAttendance() {
         else {
             return a.name.getValue().localeCompare(b.name.getValue());
         }
-    }).map(function (entry) {
+    })
+        .map(function (entry) {
         if (!entry.name)
             throw types_1.ErrorType.AssertionError;
         return types_1.capitalizeString(entry.name.getValue());
@@ -2592,11 +3084,14 @@ function refreshUpdateContactSettings() {
 }
 exports.refreshUpdateContactSettings = refreshUpdateContactSettings;
 function refreshUpdateMemberStatus() {
-    var memberNames = get_1.getMembers().map(function (entry) {
+    var memberNames = get_1.getMembers()
+        .filter(function (entry) { return entry.active && entry.active.getValue(); })
+        .map(function (entry) {
         if (!entry.name)
             throw types_1.ErrorType.AssertionError;
         return types_1.capitalizeString(entry.name.getValue());
-    }).sort();
+    })
+        .sort();
     var form = FormApp.openById(ums_1.ID);
     if (memberNames.length === 0) {
         form.addCheckboxItem()
@@ -2628,7 +3123,7 @@ exports.refreshUpdateMemberStatus = refreshUpdateMemberStatus;
 
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2729,7 +3224,9 @@ exports.refreshAccountInfo = refreshAccountInfo;
 function refreshMembers() {
     var clubInfo = get_1.getClubInfo();
     var memAttendance = {};
-    var abcMembers = get_1.getMembers().sort(function (a, b) {
+    var abcMembers = get_1.getMembers()
+        .filter(function (member) { return member.active && member.active.getValue(); })
+        .sort(function (a, b) {
         if (!a.dateJoined || !a.name || !a.active ||
             !b.dateJoined || !b.name || !b.active) {
             throw types_1.ErrorType.AssertionError;
@@ -3193,440 +3690,6 @@ exports.refreshStatements = refreshStatements;
 
 
 /***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-exports.__esModule = true;
-var tablesId_1 = __webpack_require__(3);
-var tableOps_1 = __webpack_require__(1);
-var types_1 = __webpack_require__(0);
-function removeMember(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Member') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Member');
-    var entries = id.map(function (i) { return new types_1.MemberEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.MEMBER);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeMember = removeMember;
-function removeIncome(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Income') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Income');
-    var entries = id.map(function (i) { return new types_1.IncomeEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.INCOME);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeIncome = removeIncome;
-function removeExpense(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Expense') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Expense');
-    var entries = id.map(function (i) { return new types_1.ExpenseEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.EXPENSE);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeExpense = removeExpense;
-function removeRecipient(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Recipient') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Recipient');
-    var entries = id.map(function (i) { return new types_1.RecipientEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.RECIPIENT);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeRecipient = removeRecipient;
-function removePaymentType(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('PaymentType') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('PaymentType');
-    var entries = id.map(function (i) { return new types_1.PaymentTypeEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.PAYMENT_TYPE);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removePaymentType = removePaymentType;
-function removeStatement(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Statement') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Statement');
-    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.STATEMENT);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeStatement = removeStatement;
-function removeAttendance(id, sheetId) {
-    var sheet = sheetId ?
-        SpreadsheetApp.openById(sheetId).getSheetByName('Attendance') :
-        SpreadsheetApp.openById(tablesId_1.ID).getSheetByName('Attendance');
-    var entries = id.map(function (i) { return new types_1.StatementEntry(i); });
-    types_1.RefreshLogger.markAsUpdated(types_1.DataTable.ATTENDANCE);
-    tableOps_1.remove(sheet, entries);
-}
-exports.removeAttendance = removeAttendance;
-
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
-    if (m) return m.call(o);
-    return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-};
-exports.__esModule = true;
-var email_1 = __webpack_require__(19);
-var append_1 = __webpack_require__(17);
-var get_1 = __webpack_require__(2);
-var update_1 = __webpack_require__(18);
-var types_1 = __webpack_require__(0);
-function getAmountOwed(memberNames, sheetId) {
-    var e_1, _a;
-    var members = get_1.getMembers(sheetId);
-    var owed = [];
-    var startIndex = 0;
-    try {
-        for (var memberNames_1 = __values(memberNames), memberNames_1_1 = memberNames_1.next(); !memberNames_1_1.done; memberNames_1_1 = memberNames_1.next()) {
-            var name = memberNames_1_1.value;
-            var i = startIndex;
-            do {
-                var curName = members[i].name;
-                var curOwed = members[i].amountOwed;
-                if (!curName || !curOwed) {
-                    throw types_1.ErrorType.AssertionError;
-                }
-                else if (curName.toString() === name.toString()) {
-                    owed.push(curOwed);
-                    startIndex = i;
-                    break;
-                }
-                i = (i + 1) % members.length;
-            } while (i !== startIndex);
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (memberNames_1_1 && !memberNames_1_1.done && (_a = memberNames_1["return"])) _a.call(memberNames_1);
-        }
-        finally { if (e_1) throw e_1.error; }
-    }
-    if (owed.length !== memberNames.length) {
-        throw types_1.ErrorType.NoMatchFoundError;
-    }
-    return owed;
-}
-function getDuesValues(memberNames, sheetId) {
-    var e_2, _a;
-    var clubInfo = get_1.getClubInfo(sheetId);
-    var members = get_1.getMembers(sheetId);
-    var duesVals = [];
-    var startIndex = 0;
-    try {
-        for (var memberNames_2 = __values(memberNames), memberNames_2_1 = memberNames_2.next(); !memberNames_2_1.done; memberNames_2_1 = memberNames_2.next()) {
-            var name = memberNames_2_1.value;
-            var i = startIndex;
-            do {
-                var curName = members[i].name;
-                var curOfficer = members[i].officer;
-                if (!curName || !curOfficer) {
-                    throw types_1.ErrorType.AssertionError;
-                }
-                else if (curName.toString() === name.toString()) {
-                    duesVals.push(curOfficer.getValue() ? clubInfo.officerFee : clubInfo.memberFee);
-                    startIndex = i;
-                    break;
-                }
-                i = (i + 1) % members.length;
-            } while (i !== startIndex);
-        }
-    }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
-    finally {
-        try {
-            if (memberNames_2_1 && !memberNames_2_1.done && (_a = memberNames_2["return"])) _a.call(memberNames_2);
-        }
-        finally { if (e_2) throw e_2.error; }
-    }
-    return duesVals;
-}
-function yesnoToBool(yesno) {
-    switch (yesno) {
-        case 'Yes':
-            return types_1.BooleanData.TRUE;
-        case 'No':
-            return types_1.BooleanData.FALSE;
-        default:
-            throw types_1.ErrorType.IllegalArgumentError;
-    }
-}
-function addExpense(amountRes, description, recipient, paymentType, sheetId) {
-    var today = new types_1.DateData(new Date());
-    var recipientData = new types_1.StringData(recipient.trim().toLowerCase());
-    var payTypeData = new types_1.StringData(paymentType.trim().toLowerCase());
-    var payTypeId;
-    try {
-        payTypeId = get_1.getPaymentTypeIds([payTypeData], sheetId)[0];
-    }
-    catch (e) {
-        if (e === types_1.ErrorType.NoMatchFoundError) {
-            payTypeId = append_1.appendPaymentType([payTypeData], sheetId)[0];
-        }
-        else {
-            throw e;
-        }
-    }
-    var recipientId;
-    try {
-        recipientId = get_1.getRecipientIds([recipientData], sheetId)[0];
-    }
-    catch (e) {
-        if (e === types_1.ErrorType.NoMatchFoundError) {
-            recipientId = append_1.appendRecipient([recipientData], sheetId)[0];
-        }
-        else {
-            throw e;
-        }
-    }
-    var amount = parseFloat(amountRes);
-    if (isNaN(amount)) {
-        throw "parseFloat error: Unable to parse amount given";
-    }
-    append_1.appendExpense([today], [new types_1.IntData(Math.round(amount * 100))], [new types_1.StringData(description)], [payTypeId], [recipientId], [new types_1.IntData(-1)], sheetId);
-}
-exports.addExpense = addExpense;
-function addIncome(amountRes, description, paymentType, sheetId) {
-    var today = new types_1.DateData(new Date());
-    var payTypeData = new types_1.StringData(paymentType.trim().toLowerCase());
-    var payTypeId;
-    try {
-        payTypeId = get_1.getPaymentTypeIds([payTypeData], sheetId)[0];
-    }
-    catch (e) {
-        if (e === types_1.ErrorType.NoMatchFoundError) {
-            payTypeId = append_1.appendPaymentType([payTypeData], sheetId)[0];
-        }
-        else {
-            throw e;
-        }
-    }
-    var amount = parseFloat(amountRes);
-    if (isNaN(amount)) {
-        throw "parseFloat error: Unable to parse amount given";
-    }
-    append_1.appendIncome([today], [new types_1.IntData(Math.round(amount * 100))], [new types_1.StringData(description)], [payTypeId], [new types_1.IntData(-1)], sheetId);
-}
-exports.addIncome = addIncome;
-function addMemberIOU(membersRes, amountRes, description, sheetId) {
-    var memberNames = membersRes.map(function (member) { return new types_1.StringData(member.substr(0, member.indexOf(':')).toLowerCase()); });
-    if (!sheetId) {
-        email_1.emailIOUNotification(memberNames.map(function (member) { return new types_1.StringData(types_1.capitalizeString(member.getValue())); }), amountRes, description);
-    }
-    var memberIds = get_1.getMemberIds(memberNames, sheetId);
-    var amount = parseFloat(amountRes);
-    if (isNaN(amount)) {
-        throw "parseFloat error: Unable to parse amount given";
-    }
-    var amountCents = Math.round(amount * 100);
-    var curOwed = getAmountOwed(memberNames, sheetId);
-    update_1.updateMember(memberIds, undefined, undefined, curOwed.map(function (cur) { return new types_1.IntData(cur.getValue() + amountCents); }), undefined, undefined, undefined, undefined, undefined, undefined, undefined, sheetId);
-}
-exports.addMemberIOU = addMemberIOU;
-function collectDues(memListRes, paymentTypeRes, sheetId) {
-    memListRes = memListRes.map(function (res) { return res.substr(0, res.indexOf(':')); });
-    var curQuarter = get_1.getClubInfo(sheetId).currentQuarterId;
-    var members = memListRes.map(function (name) { return new types_1.StringData(name.toLowerCase()); });
-    var descriptions = memListRes.map(function (name) { return new types_1.StringData(name + ", dues for " + curQuarter.toDateString()); });
-    var paymentType = new types_1.StringData(paymentTypeRes.trim().toLowerCase());
-    var today = new types_1.DateData(new Date());
-    var memberIds = get_1.getMemberIds(members, sheetId);
-    update_1.updateMember(memberIds, undefined, undefined, undefined, undefined, undefined, undefined, undefined, types_1.repeat(types_1.BooleanData.TRUE, members.length), undefined, undefined, sheetId);
-    var duesAmounts = getDuesValues(members, sheetId);
-    var payTypeId;
-    try {
-        payTypeId = get_1.getPaymentTypeIds([paymentType], sheetId)[0];
-    }
-    catch (e) {
-        if (e === types_1.ErrorType.NoMatchFoundError) {
-            payTypeId = append_1.appendPaymentType([paymentType], sheetId)[0];
-        }
-        else {
-            throw e;
-        }
-    }
-    if (!sheetId) {
-        for (var i = 0; i < members.length; ++i) {
-            email_1.emailReceipts([new types_1.StringData(types_1.capitalizeString(members[i].getValue()))], (duesAmounts[i].getValue() / 100).toString(), descriptions[i].toString());
-        }
-    }
-    append_1.appendIncome(types_1.repeat(today, members.length), duesAmounts, descriptions, types_1.repeat(payTypeId, members.length), types_1.repeat(new types_1.IntData(-1), members.length), sheetId);
-}
-exports.collectDues = collectDues;
-function confirmTransfer(statementList, sheetId) {
-    var ids = statementList.map(function (s) {
-        var start = s.lastIndexOf('[');
-        var end = s.lastIndexOf(']');
-        return types_1.IntData.create(s.substr(start + 1, end - start - 1));
-    });
-    update_1.updateStatement(ids, undefined, types_1.repeat(types_1.BooleanData.TRUE, ids.length), sheetId);
-}
-exports.confirmTransfer = confirmTransfer;
-function nextQuarter(sheetId) {
-    var clubInfo = get_1.getClubInfo(sheetId);
-    var ids = get_1.getMembers(sheetId).map(function (member) {
-        if (!member.id)
-            throw types_1.ErrorType.AssertionError;
-        return member.id;
-    });
-    update_1.updateClubInfo(undefined, undefined, undefined, clubInfo.currentQuarterId.next(), sheetId);
-    update_1.updateMember(ids, undefined, undefined, undefined, undefined, undefined, undefined, undefined, types_1.repeat(types_1.BooleanData.FALSE, ids.length), undefined, undefined, sheetId);
-}
-exports.nextQuarter = nextQuarter;
-function resolveMemberIOU(membersRes, amount, description, paymentType, sheetId) {
-    var memberNames = membersRes.map(function (member) { return new types_1.StringData(member.substr(0, member.indexOf(':')).toLowerCase()); });
-    if (!sheetId) {
-        email_1.emailReceipts(memberNames.map(function (member) { return new types_1.StringData(types_1.capitalizeString(member.getValue())); }), amount, description);
-    }
-    var memberIds = get_1.getMemberIds(memberNames, sheetId);
-    var amountCents = Math.round(parseFloat(amount) * 100);
-    var curOwed = getAmountOwed(memberNames, sheetId);
-    var payTypeData = new types_1.StringData(paymentType.trim().toLowerCase());
-    var payTypeId;
-    try {
-        payTypeId = get_1.getPaymentTypeIds([payTypeData], sheetId)[0];
-    }
-    catch (e) {
-        if (e === types_1.ErrorType.NoMatchFoundError) {
-            payTypeId = append_1.appendPaymentType([payTypeData], sheetId)[0];
-        }
-        else {
-            throw e;
-        }
-    }
-    update_1.updateMember(memberIds, undefined, undefined, curOwed.map(function (cur) { return new types_1.IntData(cur.getValue() - amountCents); }), undefined, undefined, undefined, undefined, undefined, undefined, undefined, sheetId);
-    var today = new types_1.DateData(new Date());
-    append_1.appendIncome(types_1.repeat(today, memberNames.length), types_1.repeat(new types_1.IntData(amountCents), memberNames.length), memberNames.map(function (name) { return new types_1.StringData(types_1.capitalizeString(name.toString()) + ' ' + description + ' (debt)'); }), types_1.repeat(payTypeId, memberNames.length), types_1.repeat(new types_1.IntData(-1), memberNames.length), sheetId);
-}
-exports.resolveMemberIOU = resolveMemberIOU;
-function takeAttendance(memListRes, newMemberRes, sheetId) {
-    var e_3, _a;
-    if (!memListRes) {
-        if (!newMemberRes) {
-            return;
-        }
-        memListRes = [];
-    }
-    var curQuarter = get_1.getClubInfo(sheetId).currentQuarterId;
-    var today = new types_1.DateData(new Date());
-    var curNames = get_1.getMembers(sheetId).map(function (member) {
-        if (!member.name)
-            throw types_1.ErrorType.AssertionError;
-        return member.name.getValue();
-    });
-    memListRes = memListRes.map(function (name) { return name.toLowerCase(); });
-    var prevMembersData = memListRes.map(function (name) { return new types_1.StringData(name); });
-    var newMembersData = [];
-    var newIds;
-    if (newMemberRes === undefined) {
-        newIds = [];
-    }
-    else {
-        newMemberRes = newMemberRes.toLowerCase();
-        var newMembers = newMemberRes.split('\n').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; });
-        try {
-            for (var newMembers_1 = __values(newMembers), newMembers_1_1 = newMembers_1.next(); !newMembers_1_1.done; newMembers_1_1 = newMembers_1.next()) {
-                var member = newMembers_1_1.value;
-                if (curNames.indexOf(member) === -1) {
-                    newMembersData.push(new types_1.StringData(member));
-                }
-                else {
-                    memListRes.indexOf(member);
-                    prevMembersData.push(new types_1.StringData(member));
-                }
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (newMembers_1_1 && !newMembers_1_1.done && (_a = newMembers_1["return"])) _a.call(newMembers_1);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-        if (newMembersData.length > 0) {
-            newIds = append_1.appendMember(newMembersData, types_1.repeat(today, newMembersData.length), types_1.repeat(new types_1.IntData(0), newMembersData.length), types_1.repeat(new types_1.StringData(''), newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.TRUE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), types_1.repeat(types_1.BooleanData.FALSE, newMembersData.length), sheetId);
-        }
-        else {
-            newIds = [];
-        }
-    }
-    if (prevMembersData.length === 0) {
-        append_1.appendAttendance([today], [new types_1.IntListData(newIds)], [curQuarter], sheetId);
-    }
-    else {
-        var prevIds = get_1.getMemberIds(prevMembersData, sheetId);
-        prevIds.sort(function (valA, valB) { return valA.getValue() - valB.getValue(); });
-        append_1.appendAttendance([today], [new types_1.IntListData(prevIds.concat(newIds))], [curQuarter], sheetId);
-    }
-}
-exports.takeAttendance = takeAttendance;
-function transferFunds(incomes, expenses, sheetId) {
-    if (incomes || expenses) {
-        var today = new types_1.DateData(new Date());
-        var statementId = append_1.appendStatement([today], [types_1.BooleanData.FALSE], sheetId)[0];
-        if (incomes) {
-            var incomeIds = incomes.map(function (s) {
-                var start = s.lastIndexOf('[');
-                var end = s.lastIndexOf(']');
-                return types_1.IntData.create(s.substr(start + 1, end - start - 1));
-            });
-            update_1.updateIncome(incomeIds, undefined, undefined, undefined, undefined, types_1.repeat(statementId, incomeIds.length), sheetId);
-        }
-        if (expenses) {
-            var expenseIds = expenses.map(function (s) {
-                var start = s.lastIndexOf('[');
-                var end = s.lastIndexOf(']');
-                return types_1.IntData.create(s.substr(start + 1, end - start - 1));
-            });
-            update_1.updateExpense(expenseIds, undefined, undefined, undefined, undefined, undefined, types_1.repeat(statementId, expenseIds.length), sheetId);
-        }
-    }
-}
-exports.transferFunds = transferFunds;
-function updateContactSettings(name, email, phone, carrier, notifyPoll, sendReceipt, sheetId) {
-    var memberData = new types_1.StringData(name.toLowerCase());
-    var memberId = get_1.getMemberIds([memberData], sheetId);
-    var emailData;
-    if (email) {
-        emailData = new types_1.StringData(email);
-    }
-    else if (phone && carrier) {
-        phone = phone.replace('-', '').replace('-', '');
-        var carrierSuffix = types_1.CARRIERS[carrier];
-        if (carrierSuffix === undefined)
-            throw types_1.ErrorType.AssertionError;
-        emailData = new types_1.StringData(phone.concat(carrierSuffix));
-    }
-    update_1.updateMember(memberId, undefined, undefined, undefined, emailData ? [emailData] : undefined, undefined, undefined, undefined, undefined, notifyPoll ? [yesnoToBool(notifyPoll)] : undefined, sendReceipt ? [yesnoToBool(sendReceipt)] : undefined, sheetId);
-}
-exports.updateContactSettings = updateContactSettings;
-function updateMemberStatus(memberNames, performingRes, activeRes, officerRes, sheetId) {
-    var memberData = memberNames.map(function (name) { return new types_1.StringData(name.toLowerCase()); });
-    var memberId = get_1.getMemberIds(memberData, sheetId);
-    update_1.updateMember(memberId, undefined, undefined, undefined, undefined, performingRes ? types_1.repeat(yesnoToBool(performingRes), memberId.length) : undefined, activeRes ? types_1.repeat(yesnoToBool(activeRes), memberId.length) : undefined, officerRes ? types_1.repeat(yesnoToBool(officerRes), memberId.length) : undefined, undefined, undefined, undefined, sheetId);
-}
-exports.updateMemberStatus = updateMemberStatus;
-
-
-/***/ }),
 /* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3637,7 +3700,7 @@ var email_1 = __webpack_require__(19);
 var viewsId_1 = __webpack_require__(16);
 var append_1 = __webpack_require__(17);
 var get_1 = __webpack_require__(2);
-var remove_1 = __webpack_require__(23);
+var remove_1 = __webpack_require__(21);
 var update_1 = __webpack_require__(18);
 var types_1 = __webpack_require__(0);
 function menuAddMember(name, dateJoined, sheetId, toastMsg) {
@@ -4111,6 +4174,54 @@ function mergeRecipient(aliases, name, sheetId, toastMsg) {
     types_1.RefreshLogger.refresh();
 }
 exports.mergeRecipient = mergeRecipient;
+function menuDeleteMember(name, sheetId, toastMsg) {
+    if (toastMsg === undefined) {
+        toastMsg = true;
+    }
+    var attns = get_1.getAttendances(sheetId);
+    var nameData = new types_1.StringData(name.toLowerCase());
+    try {
+        var id_1 = get_1.getMemberIds([nameData], sheetId)[0].getValue();
+        var newAttnIds_1 = [];
+        var newAttnMems_1 = [];
+        attns.forEach(function (entry) {
+            if (!entry.member_ids || !entry.id)
+                throw types_1.ErrorType.AssertionError;
+            var membersPresent = entry.member_ids.getValue().map(function (x) { return x.getValue(); });
+            var curMatch = membersPresent.indexOf(id_1);
+            var flag = false;
+            while (curMatch !== -1) {
+                flag = true;
+                membersPresent.splice(curMatch, 1);
+                curMatch = membersPresent.indexOf(id_1);
+            }
+            if (flag) {
+                newAttnIds_1.push(entry.id);
+                newAttnMems_1.push(new types_1.IntListData(membersPresent.map(function (n) { return new types_1.IntData(n); })));
+            }
+        });
+        update_1.updateAttendance(newAttnIds_1, undefined, newAttnMems_1, undefined, sheetId);
+        remove_1.removeMember([new types_1.IntData(id_1)], sheetId);
+        if (toastMsg) {
+            SpreadsheetApp.openById(viewsId_1.ID).toast("Deleted " + name, 'Success', 5);
+        }
+    }
+    catch (e) {
+        if (e === types_1.ErrorType.NoMatchFoundError) {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast('Name not found', 'Deletion Failed', 5);
+            }
+        }
+        else {
+            if (toastMsg) {
+                SpreadsheetApp.openById(viewsId_1.ID).toast('Check error log for details', 'Adding Failed', 5);
+            }
+            throw e;
+        }
+    }
+    types_1.RefreshLogger.refresh();
+}
+exports.menuDeleteMember = menuDeleteMember;
 function pollNotification(title, deadline, link, sheetId, toastMsg) {
     if (toastMsg === undefined) {
         toastMsg = true;
@@ -4145,10 +4256,10 @@ exports.notifyMembers = notifyMembers;
 "use strict";
 
 exports.__esModule = true;
-var actions_1 = __webpack_require__(24);
+var actions_1 = __webpack_require__(22);
 var append_1 = __webpack_require__(17);
 var get_1 = __webpack_require__(2);
-var remove_1 = __webpack_require__(23);
+var remove_1 = __webpack_require__(21);
 var update_1 = __webpack_require__(18);
 var types_1 = __webpack_require__(0);
 var handlers_1 = __webpack_require__(25);
@@ -6676,6 +6787,22 @@ function testMenuHandlersPartTwo() {
                     }
                     if (tableVals.expense[i][4] === venmoId) {
                         tableVals.expense[i][4] = debitId;
+                    }
+                }
+                return unitTester_1.checkDatabaseValues(tableVals, id);
+            })
+        ]),
+        new unitTester_1.UnitTestSet('testDeleteMember', [
+            new unitTester_1.UnitTest('nonEmpty', function (id) {
+                var tableVals = unitTester_1.fillWithData(id);
+                handlers_1.menuDeleteMember('felicia mill', id, false);
+                var feliciaId = '11';
+                tableVals.member.splice(12, 1);
+                for (var i = 0; i < tableVals.attendance.length; ++i) {
+                    var ids = tableVals.attendance[i][2].split(',');
+                    if (ids.indexOf(feliciaId) !== -1) {
+                        ids.splice(ids.indexOf(feliciaId), 1);
+                        tableVals.attendance[i][2] = ids.join(',');
                     }
                 }
                 return unitTester_1.checkDatabaseValues(tableVals, id);
