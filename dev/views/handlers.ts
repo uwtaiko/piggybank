@@ -38,7 +38,7 @@ export function menuAddMember(name: string, dateJoined: string, sheetId?: string
                 [new IntData(0)],
                 [new StringData('')],
                 [BooleanData.FALSE],
-                [BooleanData.FALSE],
+                [BooleanData.TRUE],
                 [BooleanData.FALSE],
                 [BooleanData.FALSE],
                 [BooleanData.FALSE],

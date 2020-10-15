@@ -182,6 +182,7 @@ export function attendanceRecordsHTML() {
       if (name === undefined) throw ErrorType.AssertionError;
       return name;
     });
+    memberNames.sort();
     attendances.push(`${dateNum}: ["${memberNames.join('", "')}"]`);
   });
 

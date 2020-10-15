@@ -70,22 +70,22 @@ export class UniqueList<T> {
  * A mapping from phone carrier names to the associated email domain.
  */
 export const CARRIERS: Dictionary<string, string> = {
-    'AT&T': '@txt.att.net',
+    //'AT&T': '@txt.att.net', DOESN'T WORK WITH GMAIL?
     'T-Mobile': '@tmomail.net',
     'Verizon': '@vtext.com',
     'Sprint': '@messaging.sprintpcs.com',
-    'XFinity Mobile': '@vtext.com',
-    'Virgin Mobile': '@vmobl.com',
-    'Metro PCS': '@mymetropcs.com',
-    'Boost Mobile': '@sms.myboostmobile.com',
-    'Cricket': '@sms.cricketwireless.net',
-    'Republic Wireless': '@text.republicwireless.com',
-    'Google Fi': '@msg.fi.google.com',
-    'U.S. Cellular': '@email.uscc.net',
-    'Ting': '@message.ting.com',
-    'Consumer Cellular': '@mailmymobile.net',
-    'C-Spire': '@cspire1.com',
-    'Page Plus': '@vtext.com'
+    //'XFinity Mobile': '@vtext.com',
+    //'Virgin Mobile': '@vmobl.com',
+    //'Metro PCS': '@mymetropcs.com',
+    //'Boost Mobile': '@sms.myboostmobile.com',
+    //'Cricket': '@sms.cricketwireless.net',
+    //'Republic Wireless': '@text.republicwireless.com',
+    //'Google Fi': '@msg.fi.google.com',
+    //'U.S. Cellular': '@email.uscc.net',
+    //'Ting': '@message.ting.com',
+    //'Consumer Cellular': '@mailmymobile.net',
+    //'C-Spire': '@cspire1.com',
+    //'Page Plus': '@vtext.com',
 };
 
 /**

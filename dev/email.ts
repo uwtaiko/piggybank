@@ -25,24 +25,17 @@ export function emailReceipts(memberNames: StringData[], amount: string, descrip
     const members = getMembers();
 
     const emails: string[] = [];
-    let startIndex = 0;
     for (const name of memberNames) {
-        let i = startIndex;
-        do {
-            const curName = members[i].name;
-            const curEmail = members[i].email;
-            const curSendReceipt = members[i].sendReceipt;
-            if (!curName || !curEmail || !curSendReceipt) {
+        for (const entry of members) {
+            if (!entry.name || !entry.email || !entry.sendReceipt) {
                 throw ErrorType.AssertionError;
-            } else if (curName.toString() === name.toString()) {
-                if (curSendReceipt.getValue() && curEmail.getValue().length !== 0) {
-                    emails.push(curEmail.getValue());
+            } else if (entry.sendReceipt.toString() === name.toString()) {
+                if (entry.sendReceipt.getValue() && entry.email.getValue().length !== 0) {
+                    emails.push(entry.email.getValue());
                 }
-                startIndex = i;
                 break;
             }
-            i = (i + 1) % members.length
-        } while (i !== startIndex);
+        }
     }
 
     sendEmails(emails, `Receipt from ${GROUP_NAME}`, `This is confirming your payment of $${amount} to ${GROUP_NAME} for '${description}'.`);
@@ -59,24 +52,17 @@ export function emailIOUNotification(memberNames: StringData[], amount: string, 
     const members = getMembers();
 
     const emails: string[] = [];
-    let startIndex = 0;
     for (const name of inputNames) {
-        let i = startIndex;
-        do {
-            const curName = members[i].name;
-            const curEmail = members[i].email;
-            const curSendReceipt = members[i].sendReceipt;
-            if (!curName || !curEmail || !curSendReceipt) {
+        for (const entry of members) {
+            if (!entry.name || !entry.email || !entry.sendReceipt) {
                 throw ErrorType.AssertionError;
-            } else if (curName.toString() === name) {
-                if (curSendReceipt.getValue() || curEmail.getValue().length !== 0) {
-                    emails.push(curEmail.getValue());
+            } else if (entry.name.toString() === name) {
+                if (entry.sendReceipt.getValue() && entry.email.getValue().length !== 0) {
+                    emails.push(entry.email.getValue());
                 }
-                startIndex = i;
                 break;
             }
-            i = (i + 1) % members.length
-        } while (i !== startIndex);
+        }
     }
 
     sendEmails(emails, `IOU for ${GROUP_NAME}`, `This is confirming that you owe $${amount} to ${GROUP_NAME} for '${description}'.`);
@@ -189,21 +175,15 @@ export function emailMembers(memberList: StringData[], subject: string, body: st
     const members = getMembers(sheetId);
 
     const emails: string[] = [];
-    let startIndex = 0;
     for (const name of inputNames) {
-        let i = startIndex;
-        do {
-            const curName = members[i].name;
-            const curEmail = members[i].email;
-            if (!curName || !curEmail) {
+        for (const entry of members) {
+            if (!entry.name || !entry.email) {
                 throw ErrorType.AssertionError;
-            } else if (curName.getValue() === name && curEmail.getValue() !== '') {
-                emails.push(curEmail.getValue());
-                startIndex = i;
+            } else if (entry.name.getValue() === name && entry.email.getValue() !== '') {
+                emails.push(entry.email.getValue());
                 break;
             }
-            i = (i + 1) % members.length
-        } while (i !== startIndex);
+        }
     }
 
     emails.map(email => GmailApp.sendEmail(email, subject, body));

@@ -245,7 +245,7 @@ export function collectDuesOnFormSubmit() {
     // Multi-choice
     const paymentTypeRes = resItems[1].getResponse() as string;
 
-    disableForm(GeneratedForm.COLLECT_DUES);
+    //disableForm(GeneratedForm.COLLECT_DUES);
     RefreshLogger.markAsPriority(GeneratedForm.COLLECT_DUES);
     collectDues(memListRes, paymentTypeRes);
     //RefreshLogger.refresh();
@@ -302,7 +302,7 @@ export function takeAttendanceOnFormSubmit() {
             newMemberRes = resItems[1].getResponse() as string;
         }
     }
-    disableForm(GeneratedForm.TAKE_ATTENDANCE);
+    //disableForm(GeneratedForm.TAKE_ATTENDANCE);
     RefreshLogger.markAsPriority(GeneratedForm.TAKE_ATTENDANCE);
     takeAttendance(memListRes, newMemberRes);
     //RefreshLogger.refresh();
@@ -422,7 +422,7 @@ export function updateContactSettingsOnFormSubmit() {
         }
     }
 
-    disableForm(GeneratedForm.UPDATE_CONTACT_SETTINGS);
+    //disableForm(GeneratedForm.UPDATE_CONTACT_SETTINGS);
     RefreshLogger.markAsPriority(GeneratedForm.UPDATE_CONTACT_SETTINGS);
     updateContactSettings(name, email, phone, carrier, notifyPoll, sendReceipt);
     //RefreshLogger.refresh();

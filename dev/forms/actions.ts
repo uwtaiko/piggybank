@@ -17,21 +17,15 @@ function getAmountOwed(memberNames: StringData[], sheetId?: string) {
     const members = getMembers(sheetId);
 
     const owed: IntData[] = [];
-    let startIndex = 0;
     for (const name of memberNames) {
-        let i = startIndex;
-        do {
-            const curName = members[i].name;
-            const curOwed = members[i].amountOwed;
-            if (!curName || !curOwed) {
+        for (const entry of members) {
+            if (!entry.name || !entry.amountOwed) {
                 throw ErrorType.AssertionError;
-            } else if (curName.toString() === name.toString()) {
-                owed.push(curOwed);
-                startIndex = i;
+            } else if (entry.name.toString() === name.toString()) {
+                owed.push(entry.amountOwed);
                 break;
             }
-            i = (i + 1) % members.length;
-        } while (i !== startIndex);
+        }
     }
 
     if (owed.length !== memberNames.length) {
@@ -54,21 +48,15 @@ function getDuesValues(memberNames: StringData[], sheetId?: string) {
     const members = getMembers(sheetId);
 
     const duesVals: IntData[] = [];
-    let startIndex = 0;
     for (const name of memberNames) {
-        let i = startIndex;
-        do {
-            const curName = members[i].name;
-            const curOfficer = members[i].officer;
-            if (!curName || !curOfficer) {
+        for (const entry of members) {
+            if (!entry.name || !entry.officer) {
                 throw ErrorType.AssertionError;
-            } else if (curName.toString() === name.toString()) {
-                duesVals.push(curOfficer.getValue() ? clubInfo.officerFee : clubInfo.memberFee);
-                startIndex = i;
+            } else if (entry.name.toString() === name.toString()) {
+                duesVals.push(entry.officer.getValue() ? clubInfo.officerFee : clubInfo.memberFee);
                 break;
             }
-            i = (i + 1) % members.length
-        } while (i !== startIndex);
+        }
     }
 
     return duesVals;
