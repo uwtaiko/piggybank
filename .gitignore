@@ -1,5 +1,3 @@
 credentials.json
-build/appsscript.json
-build/bundle.js
 .token.pickle
 node_modules
