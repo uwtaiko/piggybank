@@ -299,7 +299,7 @@ export function takeAttendanceOnFormSubmit() {
                 newMemberRes = resItems[1].getResponse() as string;
             }
         } else {
-            newMemberRes = resItems[1].getResponse() as string;
+            newMemberRes = resItems[0].getResponse() as string;
         }
     }
     //disableForm(GeneratedForm.TAKE_ATTENDANCE);
