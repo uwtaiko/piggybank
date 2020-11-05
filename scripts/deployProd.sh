@@ -18,17 +18,10 @@ then
     info_msg "Deploying..." &&
 
     cd build &&
+    clasp login &&
     clasp push &&
     cd ..;
     exit_code=$?;
-
-    if [ $exit_code -ne 0 ]
-    then
-        clasp login &&
-        clasp push &&
-        cd ..;
-        exit_code=$?;
-    fi
 fi
 
 info_msg "Cleaning up template files...";
