@@ -19,6 +19,7 @@
     "lint": "./scripts/lint.sh",
     "build": "./scripts/build.sh",
     "deploy-dev": "./scripts/deployDev.sh",
+    "deploy-personal": "./scripts/deployPersonal.sh",
     "deploy-prod": "./scripts/deployProd.sh",
     "clean": "./scripts/clean.sh"
   },

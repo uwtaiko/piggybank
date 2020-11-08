@@ -1,6 +1,7 @@
 credentials.json
 .token.pickle
 node_modules
+npm-debug.log
 v8-compile-cache-0
 build/main-bundle.js
 build/test-bundle.js
