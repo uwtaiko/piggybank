@@ -1373,14 +1373,14 @@ export function testFormActionsPartTwo() {
             new UnitTest('blank', (id: string) => {
                 const tableVals = getEmptyTableState();
 
-                takeAttendance(undefined, undefined, id);
+                takeAttendance([], '', id);
 
                 return checkDatabaseValues(tableVals, id);
             }),
             new UnitTest('noNewNames', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                takeAttendance(['elvis vinson', 'esme frame'], undefined, id);
+                takeAttendance(['elvis vinson', 'esme frame'], '', id);
                 const attendance = getAttendances(id);
                 const attendanceDate = attendance[attendance.length - 1].date;
                 if (!attendanceDate) throw ErrorType.AssertionError;
@@ -1392,7 +1392,7 @@ export function testFormActionsPartTwo() {
             new UnitTest('onlyNewNames', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                takeAttendance(undefined, ' Porko Rosso', id);
+                takeAttendance([], ' Porko Rosso', id);
                 const attendance = getAttendances(id);
                 const attendanceDate = attendance[attendance.length - 1].date;
                 if (!attendanceDate) throw ErrorType.AssertionError;
@@ -1427,14 +1427,14 @@ export function testFormActionsPartTwo() {
             new UnitTest('blank', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                transferFunds(undefined, undefined, id);
+                transferFunds([], [], id);
 
                 return checkDatabaseValues(tableVals, id);
             }),
             new UnitTest('onlyIncome', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                transferFunds(['$22.22 Cash [0]'], undefined, id);
+                transferFunds(['$22.22 Cash [0]'], [], id);
                 const statements = getStatements(id);
                 const statementDate = statements[statements.length - 1].date;
                 if (!statementDate) throw ErrorType.AssertionError;
@@ -1447,7 +1447,7 @@ export function testFormActionsPartTwo() {
             new UnitTest('onlyExpense', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                transferFunds(undefined, ['-$30.00 Venmo [5]', '-$100.99 Cash [10]'], id);
+                transferFunds([], ['-$30.00 Venmo [5]', '-$100.99 Cash [10]'], id);
                 const statements = getStatements(id);
                 const statementDate = statements[statements.length - 1].date;
                 if (!statementDate) throw ErrorType.AssertionError;
@@ -1478,7 +1478,7 @@ export function testFormActionsPartTwo() {
             new UnitTest('phone', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                updateContactSettings('Carina Mckee', undefined, '2456667898', 'Verizon', 'No', 'Yes', id);
+                updateContactSettings('Carina Mckee', '', '2456667898', 'Verizon', 'No', 'Yes', id);
                 tableVals.member[13][4] = '2456667898@vtext.com';
                 tableVals.member[13][9] = '0';
                 tableVals.member[13][10] = '1';
@@ -1488,7 +1488,7 @@ export function testFormActionsPartTwo() {
             new UnitTest('email', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                updateContactSettings('kaci mcdermott', 'myemail@email.mail', undefined, undefined, undefined, undefined, id);
+                updateContactSettings('kaci mcdermott', 'myemail@email.mail', '', '', '', '', id);
                 tableVals.member[31][4] = 'myemail@email.mail';
 
                 return checkDatabaseValues(tableVals, id);
@@ -1498,7 +1498,7 @@ export function testFormActionsPartTwo() {
             new UnitTest('single', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                updateMemberStatus(['Ava-Mae Wicks'], 'Yes', undefined, 'Yes', id);
+                updateMemberStatus(['Ava-Mae Wicks'], 'Yes', '', 'Yes', id);
                 tableVals.member[4][5] = '1';
                 tableVals.member[4][7] = '1';
 
@@ -1507,7 +1507,7 @@ export function testFormActionsPartTwo() {
             new UnitTest('double', (id: string) => {
                 const tableVals = fillWithData(id);
 
-                updateMemberStatus(['elvis vinson', 'imaad oneal'], undefined, 'Yes', undefined, id);
+                updateMemberStatus(['elvis vinson', 'imaad oneal'], '', 'Yes', '', id);
                 tableVals.member[18][6] = '1';
                 tableVals.member[19][6] = '1';
 

@@ -187,19 +187,46 @@ export function viewsOnEdit(e: EditEvent) {
 
 function getMostRecentResponse(form: GoogleAppsScript.Forms.Form) {
     const resList = form.getResponses();
-    return resList[resList.length - 1].getItemResponses();
+    const shortItemList = resList[resList.length - 1].getItemResponses();
+    const fullItemList: (string | undefined)[] = Array(form.getItems().length).fill('');
+    for (let i = 0; i < shortItemList.length; ++i) {
+        const item = shortItemList[i].getItem()
+        const newIndex = item.getIndex();
+        switch (item.getType()) {
+            case FormApp.ItemType.CHECKBOX:
+            case FormApp.ItemType.GRID:
+                fullItemList[newIndex] = (shortItemList[i].getResponse() as string[]).join('\n');
+                break;
+            case FormApp.ItemType.CHECKBOX_GRID:
+                fullItemList[newIndex] = (shortItemList[i].getResponse() as string[][]).map(item => item.join('\n')).join('\n\n');
+                break;
+            default:
+                fullItemList[newIndex] = shortItemList[i].getResponse() as string;
+                break;
+        }
+    }
+    return fullItemList;
 }
 export function addExpenseOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(AE_ID));
 
     // Short text
-    const amountRes = resItems[0].getResponse() as string;
+    const amountRes = resItems[0];
     // Long text
-    const desc = resItems[1].getResponse() as string;
+    const desc = resItems[1];
     // Short text
-    const recipient = resItems[2].getResponse() as string;
+    const recipient = resItems[2];
     // Multi-choice
-    const paymentType = resItems[3].getResponse() as string;
+    const paymentType = resItems[3];
+
+    if (
+        amountRes === undefined ||
+        desc === undefined ||
+        recipient === undefined ||
+        paymentType === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
 
     disableForm(GeneratedForm.ADD_EXPENSE);
     RefreshLogger.markAsPriority(GeneratedForm.ADD_EXPENSE);
@@ -210,11 +237,19 @@ export function addIncomeOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(AI_ID));
 
     // Short text
-    const amountRes = resItems[0].getResponse() as string;
+    const amountRes = resItems[0];
     // Long text
-    const desc = resItems[1].getResponse() as string;
+    const desc = resItems[1];
     // Multi-choice
-    const paymentType = resItems[2].getResponse() as string;
+    const paymentType = resItems[2];
+
+    if (
+        amountRes === undefined ||
+        desc === undefined ||
+        paymentType === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
 
     disableForm(GeneratedForm.ADD_INCOME);
     RefreshLogger.markAsPriority(GeneratedForm.ADD_INCOME);
@@ -225,15 +260,30 @@ export function addMemberIouOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(AMI_ID));
 
     // Checkbox
-    const membersRes = resItems[0].getResponse() as string[];
+    const membersRes = resItems[0];
     // Short text
-    const amount = resItems[1].getResponse() as string;
+    const amount = resItems[1];
     // Long text
-    const description = resItems[2].getResponse() as string;
+    const description = resItems[2];
+
+    if (
+        membersRes === undefined ||
+        amount === undefined ||
+        description === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
+
+    let members: string[];
+    if (membersRes.length === 0) {
+        members = [];
+    } else {
+        members = membersRes.split('\n');
+    }
 
     disableForm(GeneratedForm.ADD_MEMBER_IOU);
     RefreshLogger.markAsPriority(GeneratedForm.ADD_MEMBER_IOU);
-    addMemberIOU(membersRes, amount, description);
+    addMemberIOU(members, amount, description);
     RefreshLogger.refresh();
 }
 export function collectDuesOnFormSubmit() {
@@ -241,20 +291,47 @@ export function collectDuesOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(CD_ID));
 
     // Checkbox
-    const memListRes = resItems[0].getResponse() as string[];
+    const memListRes = resItems[0];
     // Multi-choice
-    const paymentTypeRes = resItems[1].getResponse() as string;
+    const paymentTypeRes = resItems[1];
+
+    if (
+        memListRes === undefined ||
+        paymentTypeRes === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
+    
+    let memList: string[];
+    if (memListRes.length === 0) {
+        memList = [];
+    } else {
+        memList = memListRes.split('\n');
+    }
 
     //disableForm(GeneratedForm.COLLECT_DUES);
     RefreshLogger.markAsPriority(GeneratedForm.COLLECT_DUES);
-    collectDues(memListRes, paymentTypeRes);
+    collectDues(memList, paymentTypeRes);
     //RefreshLogger.refresh();
 }
 export function confirmTransferOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(CT_ID));
 
     // Checkbox
-    const statementList = resItems[0].getResponse() as string[];
+    const statementListRes = resItems[0];
+
+    if (
+        statementListRes === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
+
+    let statementList: string[];
+    if (statementListRes.length === 0) {
+        statementList = [];
+    } else {
+        statementList = statementListRes.split('\n');
+    }
 
     disableForm(GeneratedForm.CONFIRM_TRANSFER);
     RefreshLogger.markAsPriority(GeneratedForm.CONFIRM_TRANSFER);
@@ -271,17 +348,33 @@ export function resolveMemberIouOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(RMI_ID));
 
     // Checkbox
-    const membersRes = resItems[0].getResponse() as string[];
+    const membersRes = resItems[0];
     // Short text
-    const amount = resItems[1].getResponse() as string;
+    const amount = resItems[1];
     // Long text
-    const description = resItems[2].getResponse() as string;
+    const description = resItems[2];
     // Multi-choice
-    const paymentType = resItems[3].getResponse() as string;
+    const paymentType = resItems[3];
+
+    if (
+        membersRes === undefined ||
+        amount === undefined ||
+        description === undefined ||
+        paymentType === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
+    
+    let members: string[];
+    if (membersRes.length === 0) {
+        members = [];
+    } else {
+        members = membersRes.split('\n');
+    }
 
     disableForm(GeneratedForm.RESOLVE_MEMBER_IOU);
     RefreshLogger.markAsPriority(GeneratedForm.RESOLVE_MEMBER_IOU);
-    resolveMemberIOU(membersRes, amount, description, paymentType);
+    resolveMemberIOU(members, amount, description, paymentType);
     RefreshLogger.refresh();
 }
 export function takeAttendanceOnFormSubmit() {
@@ -289,42 +382,55 @@ export function takeAttendanceOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(TA_ID));
 
     // Checkbox
-    let memListRes: string[] | undefined;
+    const memListRes = resItems[0];
     // Short text
-    let newMemberRes: string | undefined;
-    if (resItems[0]) {
-        if (resItems[0].getItem().getIndex() === 0) {
-            memListRes = resItems[0].getResponse() as string[];
-            if (resItems[1]) {
-                newMemberRes = resItems[1].getResponse() as string;
-            }
-        } else {
-            newMemberRes = resItems[0].getResponse() as string;
-        }
+    const newMemberRes = resItems[1];
+
+    if (
+        memListRes === undefined ||
+        newMemberRes === undefined
+    ) {
+        throw ErrorType.AssertionError;
     }
+    
+    let memList: string[];
+    if (memListRes.length === 0) {
+        memList = [];
+    } else {
+        memList = memListRes.split('\n');
+    }
+
     //disableForm(GeneratedForm.TAKE_ATTENDANCE);
     RefreshLogger.markAsPriority(GeneratedForm.TAKE_ATTENDANCE);
-    takeAttendance(memListRes, newMemberRes);
+    takeAttendance(memList, newMemberRes);
     //RefreshLogger.refresh();
 }
 export function transferFundsOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(TF_ID));
 
     // Checkbox
-    let incomes: string[] | undefined;
+    const incomesRes = resItems[0];
     // Checkbox
-    let expenses: string[] | undefined;
-    if (resItems.length > 0) {
-        if (resItems.length > 1) {
-            incomes = resItems[0].getResponse() as string[];
-            expenses = resItems[1].getResponse() as string[];
-        } else {
-            if (resItems[0].getItem().getIndex() === 0) {
-                incomes = resItems[0].getResponse() as string[];
-            } else {
-                expenses = resItems[0].getResponse() as string[];
-            }
-        }
+    const expensesRes = resItems[1];
+
+    if (
+        incomesRes === undefined ||
+        expensesRes === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
+    
+    let incomes: string[];
+    if (incomesRes.length === 0) {
+        incomes = [];
+    } else {
+        incomes = incomesRes.split('\n');
+    }
+    let expenses: string[];
+    if (expensesRes.length === 0) {
+        expenses = [];
+    } else {
+        expenses = expensesRes.split('\n');
     }
 
     disableForm(GeneratedForm.TRANSFER_FUNDS);
@@ -337,89 +443,27 @@ export function updateContactSettingsOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(UCS_ID));
 
     // Multi-choice
-    const name = resItems[0].getResponse() as string;
+    const name = resItems[0];
     // Short text
-    let email: string | undefined;
+    const email = resItems[1];
     // Short text
-    let phone: string | undefined;
+    const phone = resItems[2];
     // Multi-choice
-    let carrier: string | undefined;
+    const carrier = resItems[3];
     // Multi-choice
-    let notifyPoll: string | undefined;
+    const notifyPoll = resItems[4];
     // Multi-choice
-    let sendReceipt: string | undefined;
-    if (resItems[1]) {
-        switch (resItems[1].getItem().getIndex()) {
-            case 1:
-                email = resItems[1].getResponse() as string;
-                break;
-            case 2:
-                phone = resItems[1].getResponse() as string;
-                break;
-            case 3:
-                carrier = resItems[1].getResponse() as string;
-                break;
-            case 4:
-                notifyPoll = resItems[1].getResponse() as string;
-                break;
-            case 5:
-                sendReceipt = resItems[1].getResponse() as string;
-                break;
-            default:
-                // Unable to be reached
-                throw Error
-        }
-        if (resItems[2]) {
-            switch (resItems[2].getItem().getIndex()) {
-                case 2:
-                    phone = resItems[2].getResponse() as string;
-                    break;
-                case 3:
-                    carrier = resItems[2].getResponse() as string;
-                    break;
-                case 4:
-                    notifyPoll = resItems[2].getResponse() as string;
-                    break;
-                case 5:
-                    sendReceipt = resItems[2].getResponse() as string;
-                    break;
-                default:
-                    // Unable to be reached
-                    throw Error
-            }
-            if (resItems[3]) {
-                switch (resItems[3].getItem().getIndex()) {
-                    case 3:
-                        carrier = resItems[3].getResponse() as string;
-                        break;
-                    case 4:
-                        notifyPoll = resItems[3].getResponse() as string;
-                        break;
-                    case 5:
-                        sendReceipt = resItems[3].getResponse() as string;
-                        break;
-                    default:
-                        // Unable to be reached
-                        throw Error
-                }
-                if (resItems[4]) {
-                    switch (resItems[4].getItem().getIndex()) {
-                        case 4:
-                            notifyPoll = resItems[4].getResponse() as string;
-                            break;
-                        case 5:
-                            sendReceipt = resItems[4].getResponse() as string;
-                            break;
-                        default:
-                            // Unable to be reached
-                            throw Error
-                    }
-                    if (resItems[5]) {
-                        sendReceipt = resItems[5].getResponse() as string;
-                    }
-                }
-            }
-        }
+    const sendReceipt = resItems[5];
+
+    if (
+        name === undefined ||
+        email === undefined ||
+        phone === undefined ||
+        carrier === undefined ||
+        notifyPoll === undefined ||
+        sendReceipt === undefined
+    ) {
+        throw ErrorType.AssertionError;
     }
 
     //disableForm(GeneratedForm.UPDATE_CONTACT_SETTINGS);
@@ -430,51 +474,34 @@ export function updateContactSettingsOnFormSubmit() {
 export function updateMemberStatusOnFormSubmit() {
     const resItems = getMostRecentResponse(FormApp.openById(UMS_ID));
 
+    // Checkbox
+    const membersRes = resItems[0];
     // Multi-choice
-    const memberName = resItems[0].getResponse() as string[];
+    let performingRes = resItems[1];
+    // Multi-choice
+    let activeRes = resItems[2];
+    // Multi-choice
+    let officerRes = resItems[3];
 
-    // Multi-choice
-    let performingRes: string | undefined;
-    // Multi-choice
-    let activeRes: string | undefined;
-    // Multi-choice
-    let officerRes: string | undefined;
-    if (resItems[1]) {
-        switch (resItems[1].getItem().getIndex()) {
-            case 1:
-                performingRes = resItems[1].getResponse() as string;
-                break;
-            case 2:
-                activeRes = resItems[1].getResponse() as string;
-                break;
-            case 3:
-                officerRes = resItems[1].getResponse() as string;
-                break;
-            default:
-                // Unable to be reached
-                throw Error
-        }
-        if (resItems[2]) {
-            switch (resItems[2].getItem().getIndex()) {
-                case 2:
-                    activeRes = resItems[2].getResponse() as string;
-                    break;
-                case 3:
-                    officerRes = resItems[2].getResponse() as string;
-                    break;
-                default:
-                    // Unable to be reached
-                    throw Error
-            }
-            if (resItems[3]) {
-                officerRes = resItems[3].getResponse() as string;
-            }
-        }
+    if (
+        membersRes === undefined ||
+        performingRes === undefined ||
+        activeRes === undefined ||
+        officerRes === undefined
+    ) {
+        throw ErrorType.AssertionError;
+    }
+
+    let members: string[];
+    if (membersRes.length === 0) {
+        members = [];
+    } else {
+        members = membersRes.split('\n');
     }
 
     disableForm(GeneratedForm.UPDATE_MEMBER_STATUS);
     RefreshLogger.markAsPriority(GeneratedForm.UPDATE_MEMBER_STATUS);
-    updateMemberStatus(memberName, performingRes, activeRes, officerRes);
+    updateMemberStatus(members, performingRes, activeRes, officerRes);
     RefreshLogger.refresh();
 }
 

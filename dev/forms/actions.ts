@@ -369,12 +369,9 @@ export function resolveMemberIOU(membersRes: string[], amount: string, descripti
  * @param newMemberRes The new members given in the form response
  * @param sheetId The id of the spreadsheet to operate on
  */
-export function takeAttendance(memListRes?: string[], newMemberRes?: string, sheetId?: string) {
-    if (!memListRes) {
-        if (!newMemberRes) {
-            return;
-        }
-        memListRes = [];
+export function takeAttendance(memListRes: string[], newMemberRes: string, sheetId?: string) {
+    if (memListRes.length === 0 && newMemberRes.length === 0) {
+        return;
     }
 
     const curQuarter = getClubInfo(sheetId).currentQuarterId;
@@ -440,30 +437,32 @@ export function takeAttendance(memListRes?: string[], newMemberRes?: string, she
  * @param expenses The expenses given in the form response
  * @param sheetId The id of the spreadsheet to operate on
  */
-export function transferFunds(incomes?: string[], expenses?: string[], sheetId?: string) {
-    if (incomes || expenses) {
-        const today = new DateData(new Date());
-        const statementId = appendStatement(
-            [today],
-            [BooleanData.FALSE],
-            sheetId
-        )[0];
-        if (incomes) {
-            const incomeIds = incomes.map(s => {
-                const start = s.lastIndexOf('[');
-                const end = s.lastIndexOf(']');
-                return IntData.create(s.substr(start + 1, end - start - 1));
-            });
-            updateIncome(incomeIds, undefined, undefined, undefined, undefined, repeat(statementId, incomeIds.length), sheetId);
-        }
-        if (expenses) {
-            const expenseIds = expenses.map(s => {
-                const start = s.lastIndexOf('[');
-                const end = s.lastIndexOf(']');
-                return IntData.create(s.substr(start + 1, end - start - 1));
-            });
-            updateExpense(expenseIds, undefined, undefined, undefined, undefined, undefined, repeat(statementId, expenseIds.length), sheetId);
-        }
+export function transferFunds(incomes: string[], expenses: string[], sheetId?: string) {
+    if (incomes.length === 0 && expenses.length === 0) {
+        return
+    }
+
+    const today = new DateData(new Date());
+    const statementId = appendStatement(
+        [today],
+        [BooleanData.FALSE],
+        sheetId
+    )[0];
+    if (incomes) {
+        const incomeIds = incomes.map(s => {
+            const start = s.lastIndexOf('[');
+            const end = s.lastIndexOf(']');
+            return IntData.create(s.substr(start + 1, end - start - 1));
+        });
+        updateIncome(incomeIds, undefined, undefined, undefined, undefined, repeat(statementId, incomeIds.length), sheetId);
+    }
+    if (expenses) {
+        const expenseIds = expenses.map(s => {
+            const start = s.lastIndexOf('[');
+            const end = s.lastIndexOf(']');
+            return IntData.create(s.substr(start + 1, end - start - 1));
+        });
+        updateExpense(expenseIds, undefined, undefined, undefined, undefined, undefined, repeat(statementId, expenseIds.length), sheetId);
     }
 }
 /**
@@ -478,19 +477,21 @@ export function transferFunds(incomes?: string[], expenses?: string[], sheetId?:
  * @param sendReceipt The notification preference given in the form response
  * @param sheetId The id of the spreadsheet to operate on
  */
-export function updateContactSettings(name: string, email?: string, phone?: string, carrier?: string, notifyPoll?: string, sendReceipt?: string, sheetId?: string) {
+export function updateContactSettings(name: string, email: string, phone: string, carrier: string, notifyPoll: string, sendReceipt: string, sheetId?: string) {
     const memberData = new StringData(name.toLowerCase());
     const memberId = getMemberIds([memberData], sheetId);
 
-    let emailData: StringData | undefined;
-    if (email) {
-        emailData = new StringData(email);
-    } else if (phone && carrier) {
+    let emailData: string;
+    if (email.length > 0) {
+        emailData = email;
+    } else if (phone.length > 0 && carrier.length > 0) {
         // remove the two dashes
         phone = phone.replace('-', '').replace('-', '');
         const carrierSuffix = CARRIERS[carrier];
         if (carrierSuffix === undefined) throw ErrorType.AssertionError;
-        emailData = new StringData(phone.concat(carrierSuffix));
+        emailData = phone.concat(carrierSuffix);
+    } else {
+        emailData = '';
     }
 
     updateMember(
@@ -498,7 +499,7 @@ export function updateContactSettings(name: string, email?: string, phone?: stri
         undefined,
         undefined,
         undefined,
-        emailData ? [emailData] : undefined,
+        emailData ? [new StringData(emailData)] : undefined,
         undefined,
         undefined,
         undefined,
@@ -518,7 +519,7 @@ export function updateContactSettings(name: string, email?: string, phone?: stri
  * @param officerRes The officer status given in the form response
  * @param sheetId The id of the spreadsheet to operate on
  */
-export function updateMemberStatus(memberNames: string[], performingRes?: string, activeRes?: string, officerRes?: string, sheetId?: string) {
+export function updateMemberStatus(memberNames: string[], performingRes: string, activeRes: string, officerRes: string, sheetId?: string) {
     const memberData = memberNames.map(name => new StringData(name.toLowerCase()));
     const memberId = getMemberIds(memberData, sheetId);
 
@@ -528,9 +529,9 @@ export function updateMemberStatus(memberNames: string[], performingRes?: string
         undefined,
         undefined,
         undefined,
-        performingRes ? repeat(yesnoToBool(performingRes), memberId.length) : undefined,
-        activeRes ? repeat(yesnoToBool(activeRes), memberId.length) : undefined,
-        officerRes ? repeat(yesnoToBool(officerRes), memberId.length) : undefined,
+        performingRes.length > 0 ? repeat(yesnoToBool(performingRes), memberId.length) : undefined,
+        activeRes.length > 0 ? repeat(yesnoToBool(activeRes), memberId.length) : undefined,
+        officerRes.length > 0 ? repeat(yesnoToBool(officerRes), memberId.length) : undefined,
         undefined,
         undefined,
         undefined,
