@@ -1,6 +1,9 @@
 function initialize() {
     Bundle_main.initializeAll();
 }
+function reset() {
+    Bundle_main.resetAll();
+}
 function refreshAll() {
     Bundle_main.refreshAll();
 }

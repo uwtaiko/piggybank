@@ -16,17 +16,28 @@ import { ID as VIEWS_ID } from './ids/viewsId';
 import { MEMBER_DUES, NUM_ATTNS, OFFICER_DUES, START_QUARTER, START_YEAR } from './projectInfo';
 import { orderBy } from './tableOps';
 import { createBackup } from './tables/backup';
+import { fillWithData } from './test/unitTester';
 import { DataTable, EditEvent, ErrorType, GeneratedForm, IntData, Quarter, QuarterData, RefreshLogger } from './types';
 import { menuAddAttendance, menuAddExpense, menuAddIncome, menuAddMember, menuAddPayType, menuAddRecipient, menuAddStatement, menuDeleteMember, mergeMember, mergePaymentType, mergeRecipient, notifyMembers, pollNotification, renameMember, renamePaymentType, renameRecipient } from './views/handlers';
 import { addAttendanceHTML, addExpenseHTML, addIncomeHTML, addMemberHTML, addPayTypeHTML, addRecipientHTML, addStatementHTML, attendanceRecordsHTML, attendanceSummaryHTML, deleteMemberHTML, fullFinanceHistoryHTML, memberDetailsHTML, mergeMemberHTML, mergePaymentTypeHTML, mergeRecipientHTML, notifyMembersHTML, pollNotificationHTML, renameMemberHTML, renamePaymentTypeHTML, renameRecipientHTML } from './views/html';
 
 export function initializeAll() {
+    if (
+        Session.getActiveUser().getEmail() === "uwtaiko@gmail.com" ||
+        Session.getActiveUser().getEmail() === "uwtaiko.prod@gmail.com"
+    ) {
+        throw "BLOCKED: WRONG EMAIL ACCOUNT";
+    }
     initializeTables();
     initializeViews();
 
     setupTriggers();
 
     refreshAll();
+}
+export function resetAll() {
+    resetTables();
+    resetViews();
 }
 
 export function refreshAll() {
@@ -40,6 +51,12 @@ export function backupTables() {
 }
 
 export function setupTriggers() {
+    if (
+        Session.getActiveUser().getEmail() === "uwtaiko@gmail.com" ||
+        Session.getActiveUser().getEmail() === "uwtaiko.prod@gmail.com"
+    ) {
+        throw "BLOCKED: WRONG EMAIL ACCOUNT";
+    }
     // Run everyDay everyday at 1AM
     ScriptApp.newTrigger('everyDay')
         .timeBased()
@@ -506,6 +523,12 @@ export function updateMemberStatusOnFormSubmit() {
 }
 
 function initializeViews() {
+    if (
+        Session.getActiveUser().getEmail() === "uwtaiko@gmail.com" ||
+        Session.getActiveUser().getEmail() === "uwtaiko.prod@gmail.com"
+    ) {
+        throw "BLOCKED: WRONG EMAIL ACCOUNT";
+    }
     const sheetapp = SpreadsheetApp.openById(VIEWS_ID);
 
     sheetapp.insertSheet('Account Info')
@@ -515,7 +538,8 @@ function initializeViews() {
             'Bank',
             'Venmo',
             'On-hand'
-        ]);
+        ])
+        .setFrozenRows(1);
     sheetapp.insertSheet('Members')
         .appendRow([
             'Name',
@@ -566,6 +590,12 @@ function initializeViews() {
     sheetapp.deleteSheet(sheetapp.getSheetByName('Sheet1'));
 }
 function initializeTables() {
+    if (
+        Session.getActiveUser().getEmail() === "uwtaiko@gmail.com" ||
+        Session.getActiveUser().getEmail() === "uwtaiko.prod@gmail.com"
+    ) {
+        throw "BLOCKED: WRONG EMAIL ACCOUNT";
+    }
     const sheetapp = SpreadsheetApp.openById(TABLES_ID);
 
     const quarterNum = parseInt(START_QUARTER, 10);
@@ -662,6 +692,47 @@ function initializeTables() {
         ]);
 
     sheetapp.deleteSheet(sheetapp.getSheetByName('Sheet1'));
+}
+function resetViews() {
+    if (
+        Session.getActiveUser().getEmail() === "uwtaiko@gmail.com" ||
+        Session.getActiveUser().getEmail() === "uwtaiko.prod@gmail.com"
+    ) {
+        throw "BLOCKED: WRONG EMAIL ACCOUNT";
+    }
+
+    const sheetapp = SpreadsheetApp.openById(VIEWS_ID);
+
+    sheetapp.insertSheet('Sheet1');
+    for (const sheet of sheetapp.getSheets()) {
+        if (sheet.getName() === "Sheet1") {
+            continue;
+        }
+        sheetapp.deleteSheet(sheet);
+    }
+
+    initializeViews();
+}
+function resetTables() {
+    if (
+        Session.getActiveUser().getEmail() === "uwtaiko@gmail.com" ||
+        Session.getActiveUser().getEmail() === "uwtaiko.prod@gmail.com"
+    ) {
+        throw "BLOCKED: WRONG EMAIL ACCOUNT";
+    }
+
+    const sheetapp = SpreadsheetApp.openById(TABLES_ID);
+
+    sheetapp.insertSheet('Sheet1');
+    for (const sheet of sheetapp.getSheets()) {
+        if (sheet.getName() === "Sheet1") {
+            continue;
+        }
+        sheetapp.deleteSheet(sheet);
+    }
+
+    initializeTables();
+    fillWithData(TABLES_ID);
 }
 
 function createViewsMenu() {
