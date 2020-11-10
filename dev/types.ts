@@ -417,6 +417,8 @@ export class StringData extends Data {
  * A wrapper on an integer.
  */
 export class IntData extends Data {
+    static MISSING_ID = new IntData(-1);
+
     /**
      * Creates a new IntData from an integer.
      * 
@@ -729,7 +731,7 @@ export class IntListData extends Data {
  * Describes an entry of a sheet.
  */
 export abstract class Entry {
-    constructor(public id?: IntData) { }
+    constructor(public id: IntData) { }
 
     /**
      * Creates an array from the values of this entry. All undefined values
@@ -739,47 +741,44 @@ export abstract class Entry {
     /**
      * Returns the number of fields that are accessible in this entry.
      */
-    abstract length(): number;
+    length() {
+        return this.toArray().length;
+    }
 }
 /**
  * Describes an entry of the "Member" sheet.
  */
 export class MemberEntry extends Entry {
     constructor(
-        id?: IntData,
-        public name?: StringData,
-        public dateJoined?: DateData,
-        public amountOwed?: IntData,
-        public email?: StringData,
-        public performing?: BooleanData,
-        public active?: BooleanData,
-        public officer?: BooleanData,
-        public currentDuesPaid?: BooleanData,
-        public notifyPoll?: BooleanData,
-        public sendReceipt?: BooleanData
+        id: IntData,
+        public name: StringData,
+        public dateJoined: DateData,
+        public amountOwed: IntData,
+        public email: StringData,
+        public performing: BooleanData,
+        public active: BooleanData,
+        public officer: BooleanData,
+        public currentDuesPaid: BooleanData,
+        public notifyPoll: BooleanData,
+        public sendReceipt: BooleanData
     ) {
         super(id);
     }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.id) out.push(this.id.toString());
-        if (this.name) out.push(this.name.toString());
-        if (this.dateJoined) out.push(this.dateJoined.toString());
-        if (this.amountOwed) out.push(this.amountOwed.toString());
-        if (this.email) out.push(this.email.toString());
-        if (this.performing) out.push(this.performing.toString());
-        if (this.active) out.push(this.active.toString());
-        if (this.officer) out.push(this.officer.toString());
-        if (this.currentDuesPaid) out.push(this.currentDuesPaid.toString());
-        if (this.notifyPoll) out.push(this.notifyPoll.toString());
-        if (this.sendReceipt) out.push(this.sendReceipt.toString());
-
-        return out;
-    }
-    length() {
-        return 11;
+        return [
+            this.id.toString(),
+            this.name.toString(),
+            this.dateJoined.toString(),
+            this.amountOwed.toString(),
+            this.email.toString(),
+            this.performing.toString(),
+            this.active.toString(),
+            this.officer.toString(),
+            this.currentDuesPaid.toString(),
+            this.notifyPoll.toString(),
+            this.sendReceipt.toString()
+        ];
     }
 }
 /**
@@ -787,30 +786,25 @@ export class MemberEntry extends Entry {
  */
 export class IncomeEntry extends Entry {
     constructor(
-        id?: IntData,
-        public date?: DateData,
-        public amount?: IntData,
-        public description?: StringData,
-        public paymentTypeId?: IntData,
-        public statementId?: IntData
+        id: IntData,
+        public date: DateData,
+        public amount: IntData,
+        public description: StringData,
+        public paymentTypeId: IntData,
+        public statementId: IntData
     ) {
         super(id);
     }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.id) out.push(this.id.toString());
-        if (this.date) out.push(this.date.toString());
-        if (this.amount) out.push(this.amount.toString());
-        if (this.description) out.push(this.description.toString());
-        if (this.paymentTypeId) out.push(this.paymentTypeId.toString());
-        if (this.statementId) out.push(this.statementId.toString());
-
-        return out;
-    }
-    length() {
-        return 6;
+        return [
+            this.id.toString(),
+            this.date.toString(),
+            this.amount.toString(),
+            this.description.toString(),
+            this.paymentTypeId.toString(),
+            this.statementId.toString()
+        ];
     }
 }
 /**
@@ -818,72 +812,57 @@ export class IncomeEntry extends Entry {
  */
 export class ExpenseEntry extends Entry {
     constructor(
-        id?: IntData,
-        public date?: DateData,
-        public amount?: IntData,
-        public description?: StringData,
-        public paymentTypeId?: IntData,
-        public recipientId?: IntData,
-        public statementId?: IntData
+        id: IntData,
+        public date: DateData,
+        public amount: IntData,
+        public description: StringData,
+        public paymentTypeId: IntData,
+        public recipientId: IntData,
+        public statementId: IntData
     ) {
         super(id);
     }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.id) out.push(this.id.toString());
-        if (this.date) out.push(this.date.toString());
-        if (this.amount) out.push(this.amount.toString());
-        if (this.description) out.push(this.description.toString());
-        if (this.paymentTypeId) out.push(this.paymentTypeId.toString());
-        if (this.recipientId) out.push(this.recipientId.toString());
-        if (this.statementId) out.push(this.statementId.toString());
-
-        return out;
-    }
-    length() {
-        return 7;
+        return [
+            this.id.toString(),
+            this.date.toString(),
+            this.amount.toString(),
+            this.description.toString(),
+            this.paymentTypeId.toString(),
+            this.recipientId.toString(),
+            this.statementId.toString()
+        ];
     }
 }
 /**
  * Describes an entry of the "Recipient" sheet.
  */
 export class RecipientEntry extends Entry {
-    constructor(id?: IntData, public name?: StringData) {
+    constructor(id: IntData, public name: StringData) {
         super(id);
     }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.id) out.push(this.id.toString());
-        if (this.name) out.push(this.name.toString());
-
-        return out;
-    }
-    length() {
-        return 2;
+        return [
+            this.id.toString(),
+            this.name.toString()
+        ];
     }
 }
 /**
  * Describes an entry of the "PaymentType" sheet.
  */
 export class PaymentTypeEntry extends Entry {
-    constructor(id?: IntData, public name?: StringData) {
+    constructor(id: IntData, public name: StringData) {
         super(id);
     }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.id) out.push(this.id.toString());
-        if (this.name) out.push(this.name.toString());
-
-        return out;
-    }
-    length() {
-        return 2;
+        return [
+            this.id.toString(),
+            this.name.toString()
+        ];
     }
 }
 /**
@@ -891,24 +870,19 @@ export class PaymentTypeEntry extends Entry {
  */
 export class StatementEntry extends Entry {
     constructor(
-        id?: IntData,
-        public date?: DateData,
-        public confirmed?: BooleanData
+        id: IntData,
+        public date: DateData,
+        public confirmed: BooleanData
     ) {
         super(id);
     }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.id) out.push(this.id.toString());
-        if (this.date) out.push(this.date.toString());
-        if (this.confirmed) out.push(this.confirmed.toString());
-
-        return out;
-    }
-    length() {
-        return 3;
+        return [
+            this.id.toString(),
+            this.date.toString(),
+            this.confirmed.toString()
+        ];
     }
 }
 /**
@@ -916,26 +890,21 @@ export class StatementEntry extends Entry {
  */
 export class AttendanceEntry extends Entry {
     constructor(
-        id?: IntData,
-        public date?: DateData,
-        public member_ids?: IntListData,
-        public quarter_id?: QuarterData
+        id: IntData,
+        public date: DateData,
+        public memberIds: IntListData,
+        public quarterId: QuarterData
     ) {
         super(id);
     }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.id) out.push(this.id.toString());
-        if (this.date) out.push(this.date.toString());
-        if (this.member_ids) out.push(this.member_ids.toString());
-        if (this.quarter_id) out.push(this.quarter_id.toString());
-
-        return out;
-    }
-    length() {
-        return 4;
+        return [
+            this.id.toString(),
+            this.date.toString(),
+            this.memberIds.toString(),
+            this.quarterId.toString()
+        ];
     }
 }
 /**
@@ -950,17 +919,15 @@ export class ClubInfoEntry {
     ) { }
 
     toArray() {
-        const out: string[] = [];
-
-        if (this.memberFee) out.push(this.memberFee.toString());
-        if (this.officerFee) out.push(this.officerFee.toString());
-        if (this.daysUntilFeeRequired) out.push(this.daysUntilFeeRequired.toString());
-        if (this.currentQuarterId) out.push(this.currentQuarterId.toString());
-
-        return out;
+        return [
+            this.memberFee.toString(),
+            this.officerFee.toString(),
+            this.daysUntilFeeRequired.toString(),
+            this.currentQuarterId.toString()
+        ];
     }
     length() {
-        return 4;
+        return this.toArray().length;
     }
 }
 
@@ -1024,7 +991,6 @@ export function compareByDateDesc(
     a: IncomeEntry | ExpenseEntry | StatementEntry,
     b: IncomeEntry | ExpenseEntry | StatementEntry
 ) {
-    if (!a.date || !b.date) throw ErrorType.AssertionError;
     return b.date.getValue().valueOf() - a.date.getValue().valueOf();
 }
 /**

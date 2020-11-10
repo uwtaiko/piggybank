@@ -180,12 +180,7 @@ export function append(sheet: GoogleAppsScript.Spreadsheet.Sheet, entries: Entry
     let i = 0;
     for (const entry of entries) {
         const row = entry.toArray();
-        // Verify that all fields except id are filled and that all have the
-        // same number of fields as the first entry
-        if (entry.id || row.length !== firstEntryLength - 1) {
-            throw ErrorType.IllegalArgumentError;
-        }
-        row.unshift((curId + i).toString());
+        row[0] = (curId + i).toString();
         ids.push(new IntData(curId + i));
         rows.push(row);
         ++i;
@@ -224,7 +219,7 @@ export function update(sheet: GoogleAppsScript.Spreadsheet.Sheet, entries: Entry
     }
 
     const ids = entries.map(entry => {
-        if (!entry.id) {
+        if (entry.id === IntData.MISSING_ID) {
             throw ErrorType.IllegalArgumentError;
         }
         return entry.id;
@@ -247,24 +242,17 @@ export function update(sheet: GoogleAppsScript.Spreadsheet.Sheet, entries: Entry
  * entries.
  * 
  * @param sheet The sheet to be edited
- * @param entries The entries to remove from the sheet
+ * @param ids The ids of the entries to remove from the sheet
  * 
  * @throws IllegalArgumentError if sheet does not have an IntData "id" field ||
- *                                 entries's length is 0 ||
- *                                 an entry in entries does not have an id
+ *                                 ids's length is 0
  * @throws NoMatchFound if a given id is not in the given sheet
  */
-export function remove(sheet: GoogleAppsScript.Spreadsheet.Sheet, entries: Entry[]) {
-    if (entries.length === 0) {
+export function remove(sheet: GoogleAppsScript.Spreadsheet.Sheet, ids: IntData[]) {
+    if (ids.length === 0) {
         throw ErrorType.IllegalArgumentError;
     }
 
-    const ids = entries.map(entry => {
-        if (!entry.id) {
-            throw ErrorType.IllegalArgumentError;
-        }
-        return entry.id;
-    });
     const indices = getIndicesFromIds(sheet, ids);
     indices.sort((a, b) => b - a);
 

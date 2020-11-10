@@ -27,9 +27,7 @@ export function emailReceipts(memberNames: StringData[], amount: string, descrip
     const emails: string[] = [];
     for (const name of memberNames) {
         for (const entry of members) {
-            if (!entry.name || !entry.email || !entry.sendReceipt) {
-                throw ErrorType.AssertionError;
-            } else if (entry.sendReceipt.toString() === name.toString()) {
+            if (entry.sendReceipt.toString() === name.toString()) {
                 if (entry.sendReceipt.getValue() && entry.email.getValue().length !== 0) {
                     emails.push(entry.email.getValue());
                 }
@@ -54,9 +52,7 @@ export function emailIOUNotification(memberNames: StringData[], amount: string, 
     const emails: string[] = [];
     for (const name of inputNames) {
         for (const entry of members) {
-            if (!entry.name || !entry.email || !entry.sendReceipt) {
-                throw ErrorType.AssertionError;
-            } else if (entry.name.toString() === name) {
+            if (entry.name.toString() === name) {
                 if (entry.sendReceipt.getValue() && entry.email.getValue().length !== 0) {
                     emails.push(entry.email.getValue());
                 }
@@ -80,7 +76,6 @@ export function emailPollNotification(pollName: string, deadline: Date, link: st
 
     const emails: string[] = [];
     for (const member of members) {
-        if (!member.email || !member.active || !member.performing || !member.notifyPoll) throw ErrorType.AssertionError;
         if (member.active.getValue() && member.notifyPoll.getValue() && member.email.getValue() !== '') {
             emails.push(member.email.getValue());
         }
@@ -177,9 +172,7 @@ export function emailMembers(memberList: StringData[], subject: string, body: st
     const emails: string[] = [];
     for (const name of inputNames) {
         for (const entry of members) {
-            if (!entry.name || !entry.email) {
-                throw ErrorType.AssertionError;
-            } else if (entry.name.getValue() === name && entry.email.getValue() !== '') {
+            if (entry.name.getValue() === name && entry.email.getValue() !== '') {
                 emails.push(entry.email.getValue());
                 break;
             }

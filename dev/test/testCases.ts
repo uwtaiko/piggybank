@@ -1182,7 +1182,6 @@ export function testFormActionsPartOne() {
                 addExpense('1.16', 'this is a description', ' A New Recipient ', 'a payment type   ', id);
                 const expenses = getExpenses(id);
                 const expenseDate = expenses[expenses.length - 1].date;
-                if (!expenseDate) throw ErrorType.AssertionError;
 
                 tableVals.expense.push(['0', expenseDate.toString(), '116', 'this is a description', '0', '0', '-1']);
                 tableVals.recipient.push(['0', 'a new recipient']);
@@ -1196,7 +1195,6 @@ export function testFormActionsPartOne() {
                 addExpense('10.99', 'A Description', 'A New Recipient', 'Venmo', id);
                 const expenses = getExpenses(id);
                 const expenseDate = expenses[expenses.length - 1].date;
-                if (!expenseDate) throw ErrorType.AssertionError;
 
                 tableVals.expense.push(['161', expenseDate.toString(), '1099', 'A Description', '4', '58', '-1']);
                 tableVals.recipient.push(['58', 'a new recipient']);
@@ -1209,7 +1207,6 @@ export function testFormActionsPartOne() {
                 addExpense('69.69', 'New Shoes', 'Trader Joes', 'new paytype', id);
                 const expenses = getExpenses(id);
                 const expenseDate = expenses[expenses.length - 1].date;
-                if (!expenseDate) throw ErrorType.AssertionError;
 
                 tableVals.expense.push(['161', expenseDate.toString(), '6969', 'New Shoes', '7', '57', '-1']);
                 tableVals.paymentType.push(['7', 'new paytype']);
@@ -1222,7 +1219,6 @@ export function testFormActionsPartOne() {
                 addExpense('100', 'Bought things', '  Menchie\'s  ', 'cash   ', id);
                 const expenses = getExpenses(id);
                 const expenseDate = expenses[expenses.length - 1].date;
-                if (!expenseDate) throw ErrorType.AssertionError;
 
                 tableVals.expense.push(['161', expenseDate.toString(), '10000', 'Bought things', '0', '11', '-1']);
 
@@ -1236,7 +1232,6 @@ export function testFormActionsPartOne() {
                 addIncome('69.69', 'New Shoes', 'new paytype', id);
                 const incomes = getIncomes(id);
                 const incomeDate = incomes[incomes.length - 1].date;
-                if (!incomeDate) throw ErrorType.AssertionError;
 
                 tableVals.income.push(['373', incomeDate.toString(), '6969', 'New Shoes', '7', '-1']);
                 tableVals.paymentType.push(['7', 'new paytype']);
@@ -1249,7 +1244,6 @@ export function testFormActionsPartOne() {
                 addIncome('100', 'Bought things', 'cash   ', id);
                 const incomes = getIncomes(id);
                 const incomeDate = incomes[incomes.length - 1].date;
-                if (!incomeDate) throw ErrorType.AssertionError;
 
                 tableVals.income.push(['373', incomeDate.toString(), '10000', 'Bought things', '0', '-1']);
 
@@ -1282,7 +1276,6 @@ export function testFormActionsPartOne() {
                 collectDues(['Malachi Keenan: $500.00'], 'cash', id);
                 const incomes = getIncomes(id);
                 const incomeDate = incomes[incomes.length - 1].date;
-                if (!incomeDate) throw ErrorType.AssertionError;
 
                 tableVals.member[2][8] = '1';
                 tableVals.income.push(['373', incomeDate.toString(), '50000', 'Malachi Keenan, dues for Spring 2019', '0', '-1']);
@@ -1295,7 +1288,6 @@ export function testFormActionsPartOne() {
                 collectDues(['Skyla Robbins: $2.00', 'Huey Wilkins: $500.00'], 'Venmo', id);
                 const incomes = getIncomes(id);
                 const incomeDate = incomes[incomes.length - 1].date;
-                if (!incomeDate) throw ErrorType.AssertionError;
 
                 tableVals.member[40][8] = '1';
                 tableVals.member[11][8] = '1';
@@ -1346,7 +1338,6 @@ export function testFormActionsPartTwo() {
                 resolveMemberIOU(['Tarik Santos: $44.00'], '99', 'Hot cheetos', 'Debit', id);
                 const incomes = getIncomes(id);
                 const incomeDate = incomes[incomes.length - 1].date;
-                if (!incomeDate) throw ErrorType.AssertionError;
 
                 tableVals.member[5][3] = '-9900';
                 tableVals.income.push(['373', incomeDate.toString(), '9900', 'Tarik Santos Hot cheetos (debt)', '6', '-1']);
@@ -1359,7 +1350,6 @@ export function testFormActionsPartTwo() {
                 resolveMemberIOU(['Esha Ritter: $500.00', 'Jayden-james Short: $44.44'], '2.50', 'New bananas', 'Cash', id);
                 const incomes = getIncomes(id);
                 const incomeDate = incomes[incomes.length - 1].date;
-                if (!incomeDate) throw ErrorType.AssertionError;
 
                 tableVals.member[41][3] = '-250';
                 tableVals.member[43][3] = '-250';
@@ -1383,7 +1373,6 @@ export function testFormActionsPartTwo() {
                 takeAttendance(['elvis vinson', 'esme frame'], '', id);
                 const attendance = getAttendances(id);
                 const attendanceDate = attendance[attendance.length - 1].date;
-                if (!attendanceDate) throw ErrorType.AssertionError;
 
                 tableVals.attendance.push(['50', attendanceDate.toString(), '16,17', '8077']);
 
@@ -1395,10 +1384,8 @@ export function testFormActionsPartTwo() {
                 takeAttendance([], ' Porko Rosso', id);
                 const attendance = getAttendances(id);
                 const attendanceDate = attendance[attendance.length - 1].date;
-                if (!attendanceDate) throw ErrorType.AssertionError;
                 const members = getMembers(id);
                 const memberDate = members[members.length - 1].dateJoined;
-                if (!memberDate) throw ErrorType.AssertionError;
 
                 tableVals.member.push(['45', 'porko rosso', memberDate.toString(), '0', '', '0', '1', '0', '0', '0', '0']);
                 tableVals.attendance.push(['50', attendanceDate.toString(), '45', '8077']);
@@ -1411,10 +1398,8 @@ export function testFormActionsPartTwo() {
                 takeAttendance(['elvis vinson'], ' Mark rubio\n  \n\n sir Fetchd  \n', id);
                 const attendance = getAttendances(id);
                 const attendanceDate = attendance[attendance.length - 1].date;
-                if (!attendanceDate) throw ErrorType.AssertionError;
                 const members = getMembers(id);
                 const membersDate = members[members.length - 1].dateJoined;
-                if (!membersDate) throw ErrorType.AssertionError;
 
                 tableVals.member.push(['45', 'mark rubio', membersDate.toString(), '0', '', '0', '1', '0', '0', '0', '0']);
                 tableVals.member.push(['46', 'sir fetchd', membersDate.toString(), '0', '', '0', '1', '0', '0', '0', '0']);
@@ -1437,7 +1422,6 @@ export function testFormActionsPartTwo() {
                 transferFunds(['$22.22 Cash [0]'], [], id);
                 const statements = getStatements(id);
                 const statementDate = statements[statements.length - 1].date;
-                if (!statementDate) throw ErrorType.AssertionError;
 
                 tableVals.statement.push(['223', statementDate.toString(), '0']);
                 tableVals.income[1][5] = '223';
@@ -1450,7 +1434,6 @@ export function testFormActionsPartTwo() {
                 transferFunds([], ['-$30.00 Venmo [5]', '-$100.99 Cash [10]'], id);
                 const statements = getStatements(id);
                 const statementDate = statements[statements.length - 1].date;
-                if (!statementDate) throw ErrorType.AssertionError;
 
                 tableVals.statement.push(['223', statementDate.toString(), '0']);
                 tableVals.expense[6][6] = '223';
@@ -1464,7 +1447,6 @@ export function testFormActionsPartTwo() {
                 transferFunds(['$10.00 Venmo [0]', '$0.99 Cash [20]'], ['-$30.00 Venmo [5]'], id);
                 const statements = getStatements(id);
                 const statementDate = statements[statements.length - 1].date;
-                if (!statementDate) throw ErrorType.AssertionError;
 
                 tableVals.statement.push(['223', statementDate.toString(), '0']);
                 tableVals.income[1][5] = '223';
@@ -3212,7 +3194,7 @@ export function testMenuHandlersPartOne() {
                     '0',
                     '',
                     '0',
-                    '0',
+                    '1',
                     '0',
                     '0',
                     '0',

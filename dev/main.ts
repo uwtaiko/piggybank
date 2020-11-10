@@ -618,11 +618,7 @@ function initializeTables() {
                 curQuarter = new QuarterData(Quarter.FALL, new IntData(yearNum));
                 break;
             default:
-                if (isNaN(quarterNum)) {
-                    curQuarter = new QuarterData(Quarter.WINTER, new IntData(yearNum));
-                } else {
-                    throw ErrorType.AssertionError;
-                }
+                throw ErrorType.AssertionError;
         }
     }
 
@@ -689,7 +685,8 @@ function initializeTables() {
             new IntData(Math.round(officerDuesNum * 100)).toString(),
             new IntData(numAttnsNum).toString(),
             curQuarter.toString()
-        ]);
+        ])
+        .setFrozenRows(1);
 
     sheetapp.deleteSheet(sheetapp.getSheetByName('Sheet1'));
 }

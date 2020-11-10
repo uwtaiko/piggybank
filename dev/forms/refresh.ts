@@ -35,7 +35,6 @@ export function refreshAllForms() {
  */
 export function refreshAddExpense() {
     const payTypes = getPaymentTypes().map(entry => {
-        if (!entry.name) throw ErrorType.AssertionError;
         return capitalizeString(entry.name.getValue());
     });
 
@@ -74,7 +73,6 @@ export function refreshAddExpense() {
  */
 export function refreshAddIncome() {
     const payTypes = getPaymentTypes().map(entry => {
-        if (!entry.name) throw ErrorType.AssertionError;
         return capitalizeString(entry.name.getValue());
     });
 
@@ -112,7 +110,6 @@ export function refreshAddMemberIou() {
     const memberNames = getMembers()
         .filter(entry => entry.active && entry.active.getValue())
         .map(entry => {
-            if (!entry.name || !entry.amountOwed) throw ErrorType.AssertionError;
             const amount = centsToString(entry.amountOwed);
             return capitalizeString(entry.name.getValue()) + ': ' + amount;
         })
@@ -158,7 +155,6 @@ export function refreshCollectDues() {
 
     const memberNames: string[] = [];
     getMembers().forEach(entry => {
-        if (!entry.name || !entry.active || !entry.currentDuesPaid || !entry.officer) throw ErrorType.AssertionError;
         if (entry.active.getValue() && !entry.currentDuesPaid.getValue()) {
             const fee = entry.officer.getValue() ? officerFee : memberFee;
             memberNames.push(capitalizeString(entry.name.getValue()) + ': ' + fee);
@@ -167,7 +163,6 @@ export function refreshCollectDues() {
     memberNames.sort();
 
     const payTypes = getPaymentTypes().map(entry => {
-        if (!entry.name) throw ErrorType.AssertionError;
         return capitalizeString(entry.name.getValue());
     });
 
@@ -209,7 +204,6 @@ export function refreshCollectDues() {
 export function refreshConfirmTransfer() {
     const statementDetails: Dictionary<number, { payType: number, amount: number }> = {};
     getIncomes().forEach(entry => {
-        if (!entry.amount || !entry.paymentTypeId || !entry.statementId) throw ErrorType.AssertionError;
         let curDetails = statementDetails[entry.statementId.getValue()];
         if (!curDetails) {
             curDetails = {
@@ -221,7 +215,6 @@ export function refreshConfirmTransfer() {
         curDetails.amount += entry.amount.getValue();
     });
     getExpenses().forEach(entry => {
-        if (!entry.amount || !entry.paymentTypeId || !entry.statementId) throw ErrorType.AssertionError;
         let curDetails = statementDetails[entry.statementId.getValue()];
         if (!curDetails) {
             curDetails = {
@@ -234,13 +227,11 @@ export function refreshConfirmTransfer() {
     });
     const idToPayType: Dictionary<number, string> = {};
     getPaymentTypes().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToPayType[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
     const transfers: string[] = [];
     getStatements().sort(compareByDateDesc).forEach(entry => {
-        if (!entry.id || !entry.date || !entry.confirmed) throw ErrorType.AssertionError;
         if (!entry.confirmed.getValue()) {
             const curDetails = statementDetails[entry.id.getValue()];
             if (!curDetails) throw ErrorType.AssertionError;
@@ -297,14 +288,12 @@ export function refreshResolveMemberIou() {
     const memberNames = getMembers()
         .filter(entry => entry.active && entry.active.getValue())
         .map(entry => {
-            if (!entry.name || !entry.amountOwed) throw ErrorType.AssertionError;
             const amount = centsToString(entry.amountOwed);
             return capitalizeString(entry.name.getValue()) + ': ' + amount;
         })
         .sort();
 
     const payTypes = getPaymentTypes().map(entry => {
-        if (!entry.name) throw ErrorType.AssertionError;
         return capitalizeString(entry.name.getValue());
     });
 
@@ -356,17 +345,9 @@ export function refreshResolveMemberIou() {
 export function refreshTakeAttendance() {
     const memberNames = getMembers()
         .filter(entry => {
-            if (!entry.active) throw ErrorType.AssertionError;
             return entry.active.getValue();
         })
         .sort((a, b) => {
-            if (
-                !a.dateJoined || !a.name || !a.active ||
-                !b.dateJoined || !b.name || !b.active
-            ) {
-                throw ErrorType.AssertionError;
-            }
-
             // SORT BY YEAR JOINED
 
             const aYear = a.dateJoined.getValue().getFullYear();
@@ -381,7 +362,6 @@ export function refreshTakeAttendance() {
             // return a.name.getValue().localeCompare(b.name.getValue());
         })
         .map(entry => {
-            if (!entry.name) throw ErrorType.AssertionError;
             return capitalizeString(entry.name.getValue());
         });
 
@@ -412,14 +392,11 @@ export function refreshTakeAttendance() {
 export function refreshTransferFunds() {
     const idToPayType: Dictionary<number, string> = {};
     getPaymentTypes().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToPayType[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
     const incomes: string[] = [];
     getIncomes().sort(compareByDateDesc).forEach(entry => {
-        if (!entry.id || !entry.amount || !entry.paymentTypeId || !entry.statementId) throw ErrorType.AssertionError;
-
         if (entry.statementId.getValue() === -1) {
             const payType = idToPayType[entry.paymentTypeId.getValue()];
             if (payType === undefined) throw ErrorType.AssertionError
@@ -432,8 +409,6 @@ export function refreshTransferFunds() {
 
     const expenses: string[] = [];
     getExpenses().sort(compareByDateDesc).forEach(entry => {
-        if (!entry.id || !entry.amount || !entry.paymentTypeId || !entry.statementId) throw ErrorType.AssertionError;
-
         if (entry.statementId.getValue() === -1) {
             const payType = idToPayType[entry.paymentTypeId.getValue()];
             if (payType === undefined) throw ErrorType.AssertionError
@@ -481,7 +456,6 @@ export function refreshTransferFunds() {
 export function refreshUpdateContactSettings() {
     const memberNames: string[] = [];
     getMembers().forEach(entry => {
-        if (!entry.name || !entry.active) throw ErrorType.AssertionError;
         if (entry.active.getValue()) {
             memberNames.push(capitalizeString(entry.name.getValue()));
         }
@@ -539,7 +513,6 @@ export function refreshUpdateMemberStatus() {
     const memberNames = getMembers()
         .filter(entry => entry.active && entry.active.getValue())
         .map(entry => {
-            if (!entry.name) throw ErrorType.AssertionError;
             return capitalizeString(entry.name.getValue());
         })
         .sort();

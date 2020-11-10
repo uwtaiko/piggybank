@@ -19,9 +19,7 @@ function getAmountOwed(memberNames: StringData[], sheetId?: string) {
     const owed: IntData[] = [];
     for (const name of memberNames) {
         for (const entry of members) {
-            if (!entry.name || !entry.amountOwed) {
-                throw ErrorType.AssertionError;
-            } else if (entry.name.toString() === name.toString()) {
+            if (entry.name.toString() === name.toString()) {
                 owed.push(entry.amountOwed);
                 break;
             }
@@ -50,9 +48,7 @@ function getDuesValues(memberNames: StringData[], sheetId?: string) {
     const duesVals: IntData[] = [];
     for (const name of memberNames) {
         for (const entry of members) {
-            if (!entry.name || !entry.officer) {
-                throw ErrorType.AssertionError;
-            } else if (entry.name.toString() === name.toString()) {
+            if (entry.name.toString() === name.toString()) {
                 duesVals.push(entry.officer.getValue() ? clubInfo.officerFee : clubInfo.memberFee);
                 break;
             }
@@ -295,7 +291,6 @@ export function confirmTransfer(statementList: string[], sheetId?: string) {
 export function nextQuarter(sheetId?: string) {
     const clubInfo = getClubInfo(sheetId);
     const ids = getMembers(sheetId).map(member => {
-        if (!member.id) throw ErrorType.AssertionError;
         return member.id;
     });
 
@@ -377,7 +372,6 @@ export function takeAttendance(memListRes: string[], newMemberRes: string, sheet
     const curQuarter = getClubInfo(sheetId).currentQuarterId;
     const today = new DateData(new Date());
     const curNames = getMembers(sheetId).map(member => {
-        if (!member.name) throw ErrorType.AssertionError;
         return member.name.getValue();
     });
 
@@ -448,7 +442,7 @@ export function transferFunds(incomes: string[], expenses: string[], sheetId?: s
         [BooleanData.FALSE],
         sheetId
     )[0];
-    if (incomes) {
+    if (incomes.length > 0) {
         const incomeIds = incomes.map(s => {
             const start = s.lastIndexOf('[');
             const end = s.lastIndexOf(']');
@@ -456,7 +450,7 @@ export function transferFunds(incomes: string[], expenses: string[], sheetId?: s
         });
         updateIncome(incomeIds, undefined, undefined, undefined, undefined, repeat(statementId, incomeIds.length), sheetId);
     }
-    if (expenses) {
+    if (expenses.length > 0) {
         const expenseIds = expenses.map(s => {
             const start = s.lastIndexOf('[');
             const end = s.lastIndexOf(']');

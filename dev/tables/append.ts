@@ -53,7 +53,7 @@ export function appendMember(
     for (let i = 0; i < numEntries; ++i) {
         entries.push(
             new MemberEntry(
-                undefined,
+                IntData.MISSING_ID,
                 name[i],
                 dateJoined[i],
                 amountOwed[i],
@@ -112,7 +112,7 @@ export function appendIncome(
     for (let i = 0; i < numEntries; ++i) {
         entries.push(
             new IncomeEntry(
-                undefined,
+                IntData.MISSING_ID,
                 date[i],
                 amount[i],
                 description[i],
@@ -169,7 +169,7 @@ export function appendExpense(
     for (let i = 0; i < numEntries; ++i) {
         entries.push(
             new ExpenseEntry(
-                undefined,
+                IntData.MISSING_ID,
                 date[i],
                 amount[i],
                 description[i],
@@ -201,7 +201,7 @@ export function appendRecipient(name: StringData[], sheetId?: string) {
 
     const entries: RecipientEntry[] = [];
     for (let i = 0; i < numEntries; ++i) {
-        entries.push(new RecipientEntry(undefined, name[i]));
+        entries.push(new RecipientEntry(IntData.MISSING_ID, name[i]));
     }
 
     const sheet = sheetId ?
@@ -225,7 +225,7 @@ export function appendPaymentType(name: StringData[], sheetId?: string) {
 
     const entries: PaymentTypeEntry[] = [];
     for (let i = 0; i < numEntries; ++i) {
-        entries.push(new PaymentTypeEntry(undefined, name[i]));
+        entries.push(new PaymentTypeEntry(IntData.MISSING_ID, name[i]));
     }
 
     const sheet = sheetId ?
@@ -263,7 +263,7 @@ export function appendStatement(
     for (let i = 0; i < numEntries; ++i) {
         entries.push(
             new StatementEntry(
-                undefined,
+                IntData.MISSING_ID,
                 date[i],
                 confirmed[i]
             )
@@ -304,7 +304,7 @@ export function appendAttendance(
     const entries: AttendanceEntry[] = [];
     for (let i = 0; i < numEntries; ++i) {
         entries.push(
-            new AttendanceEntry(undefined, date[i], memberIds[i], quarterId[i])
+            new AttendanceEntry(IntData.MISSING_ID, date[i], memberIds[i], quarterId[i])
         );
     }
 

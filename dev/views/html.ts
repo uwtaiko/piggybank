@@ -9,13 +9,12 @@ export function memberDetailsHTML() {
   const clubInfo = getClubInfo();
   const memAttendance: Dictionary<number, UniqueList<number>> = {};
   getAttendances().forEach(entry => {
-    if (!entry.date || !entry.member_ids || !entry.quarter_id) throw ErrorType.AssertionError;
     const curDate = entry.date.getValue();
     const dateNum = curDate.getFullYear() * 1000 +
       curDate.getMonth() * 50 +
       curDate.getDate();
-    if (entry.quarter_id.getValue() === clubInfo.currentQuarterId.getValue()) {
-      entry.member_ids.getValue().forEach(memberId => {
+    if (entry.quarterId.getValue() === clubInfo.currentQuarterId.getValue()) {
+      entry.memberIds.getValue().forEach(memberId => {
         let curSet = memAttendance[memberId.getValue()];
         if (!curSet) {
           curSet = new UniqueList<number>();
@@ -29,23 +28,9 @@ export function memberDetailsHTML() {
   const memberData: string[] = [];
   getMembers()
     .sort((a, b) => {
-      if (!a.name || !b.name) throw ErrorType.AssertionError;
       return a.name.getValue().localeCompare(b.name.getValue());
     })
     .forEach(member => {
-      if (
-        !member.id ||
-        !member.active ||
-        !member.amountOwed ||
-        !member.currentDuesPaid ||
-        !member.dateJoined ||
-        !member.email ||
-        !member.name ||
-        !member.notifyPoll ||
-        !member.officer ||
-        !member.performing ||
-        !member.sendReceipt
-      ) throw ErrorType.AssertionError;
       const name = capitalizeString(member.name.getValue());
 
       let status = '';
@@ -148,13 +133,11 @@ export function memberDetailsHTML() {
 export function attendanceRecordsHTML() {
   const idToMember: Dictionary<number, string> = {};
   getMembers().forEach(entry => {
-    if (!entry.id || !entry.name) throw ErrorType.AssertionError;
     idToMember[entry.id.getValue()] = capitalizeString(entry.name.getValue());
   });
 
   const dailyAttendance: Dictionary<number, UniqueList<number>> = {};
   getAttendances().forEach(entry => {
-    if (!entry.date || !entry.member_ids) throw ErrorType.AssertionError;
     const curDate = entry.date.getValue();
     const dateNum =
       curDate.getFullYear() * 1000 +
@@ -162,9 +145,9 @@ export function attendanceRecordsHTML() {
       curDate.getDate();
     let curSet = dailyAttendance[dateNum];
     if (!curSet) {
-      dailyAttendance[dateNum] = new UniqueList<number>(entry.member_ids.getValue().map(x => x.getValue()));
+      dailyAttendance[dateNum] = new UniqueList<number>(entry.memberIds.getValue().map(x => x.getValue()));
     } else {
-      entry.member_ids.getValue().forEach(memberId => {
+      entry.memberIds.getValue().forEach(memberId => {
         if (!curSet) throw ErrorType.AssertionError;
         curSet.add(memberId.getValue());
       });
@@ -334,14 +317,12 @@ export function attendanceRecordsHTML() {
  */
 export function attendanceSummaryHTML() {
   const idToName: string[] = getMembers().map(entry => {
-    if (!entry.id || !entry.name) throw ErrorType.AssertionError;
     return `${entry.id.getValue()}: "${capitalizeString(entry.name.getValue())}"`;
   });
 
   const days: number[] = [];
   const dailyAttendance: Dictionary<number, UniqueList<number>> = {};
   getAttendances().forEach(entry => {
-    if (!entry.date || !entry.member_ids) throw ErrorType.AssertionError;
     const curDate = entry.date.getValue();
     const dateNum =
       curDate.getFullYear() * 1000 +
@@ -350,9 +331,9 @@ export function attendanceSummaryHTML() {
     let curSet = dailyAttendance[dateNum];
     if (!curSet) {
       days.push(dateNum);
-      dailyAttendance[dateNum] = new UniqueList<number>(entry.member_ids.getValue().map(x => x.getValue()));
+      dailyAttendance[dateNum] = new UniqueList<number>(entry.memberIds.getValue().map(x => x.getValue()));
     } else {
-      entry.member_ids.getValue().forEach(memberId => {
+      entry.memberIds.getValue().forEach(memberId => {
         if (!curSet) throw ErrorType.AssertionError;
         curSet.add(memberId.getValue());
       });
@@ -577,7 +558,6 @@ export function fullFinanceHistoryHTML() {
   let minDateId = Number.POSITIVE_INFINITY;
   let maxDateId = Number.NEGATIVE_INFINITY;
   getIncomes().forEach(entry => {
-    if (!entry.date || !entry.amount) throw ErrorType.AssertionError;
     const dateId = entry.date.getValue().getFullYear() * 12 + entry.date.getValue().getMonth();
 
     if (dateId < minDateId) minDateId = dateId;
@@ -591,7 +571,6 @@ export function fullFinanceHistoryHTML() {
     curDetails.income += entry.amount.getValue();
   });
   getExpenses().forEach(entry => {
-    if (!entry.date || !entry.amount) throw ErrorType.AssertionError;
     const dateId = entry.date.getValue().getFullYear() * 12 + entry.date.getValue().getMonth();
 
     if (dateId < minDateId) minDateId = dateId;
@@ -832,10 +811,8 @@ export function addMemberHTML() {
 export function addAttendanceHTML() {
   const nameCheckbox: string[] = [];
   getMembers().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).forEach(member => {
-    if (!member.id || !member.name) throw ErrorType.AssertionError;
     nameCheckbox.push(`<input type="checkbox" class="name" value="${member.id.toString()}"/> ${capitalizeString(member.name.toString())}\n`);
   });
 
@@ -952,10 +929,8 @@ export function addAttendanceHTML() {
  */
 export function addIncomeHTML() {
   const payTypes = getPaymentTypes().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).map(payType => {
-    if (!payType.name) throw ErrorType.AssertionError;
     return `<option>${capitalizeString(payType.name.getValue())}</option>`;
   });
 
@@ -1028,10 +1003,8 @@ export function addIncomeHTML() {
  */
 export function addExpenseHTML() {
   const payTypes = getPaymentTypes().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).map(payType => {
-    if (!payType.name) throw ErrorType.AssertionError;
     return `<option>${capitalizeString(payType.name.getValue())}</option>`;
   });
 
@@ -1110,13 +1083,11 @@ export function addExpenseHTML() {
 export function addStatementHTML() {
   const idToPayType: Dictionary<number, string> = {};
   getPaymentTypes().forEach(entry => {
-    if (!entry.id || !entry.name) throw ErrorType.AssertionError;
     idToPayType[entry.id.getValue()] = capitalizeString(entry.name.getValue());
   });
 
   const incomes: string[] = [];
   getIncomes().sort(compareByDateDesc).forEach(entry => {
-    if (!entry.id || !entry.date || !entry.amount || !entry.description || !entry.paymentTypeId || !entry.statementId) throw ErrorType.AssertionError;
     if (entry.statementId.getValue() === -1) {
       incomes.push(`<input type="checkbox" class="income" value="${entry.id.toString()}"/>${entry.date.toDateString()}, ${centsToString(entry.amount)} (${idToPayType[entry.paymentTypeId.getValue()]}) - ${entry.description.toString()}\n`);
     }
@@ -1124,7 +1095,6 @@ export function addStatementHTML() {
 
   const expenses: string[] = [];
   getExpenses().sort(compareByDateDesc).forEach(entry => {
-    if (!entry.id || !entry.date || !entry.amount || !entry.description || !entry.paymentTypeId || !entry.statementId) throw ErrorType.AssertionError;
     if (entry.statementId.getValue() === -1) {
       expenses.push(`<input type="checkbox" class="expense" value="${entry.id.toString()}"/>${entry.date.toDateString()}, -${centsToString(entry.amount)} (${idToPayType[entry.paymentTypeId.getValue()]}) - ${entry.description.toString()}\n`);
     }
@@ -1277,10 +1247,8 @@ export function addPayTypeHTML() {
  */
 export function renameMemberHTML() {
   const memberNames = getMembers().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).map(member => {
-    if (!member.name) throw ErrorType.AssertionError;
     return `<option>${capitalizeString(member.name.getValue())}</option>`;
   });
   return `
@@ -1319,10 +1287,8 @@ export function renameMemberHTML() {
  */
 export function renamePaymentTypeHTML() {
   const payTypes = getPaymentTypes().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).map(member => {
-    if (!member.name) throw ErrorType.AssertionError;
     return `<option>${capitalizeString(member.name.getValue())}</option>`;
   });
   return `
@@ -1361,10 +1327,8 @@ export function renamePaymentTypeHTML() {
  */
 export function renameRecipientHTML() {
   const recipients = getRecipients().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).map(member => {
-    if (!member.name) throw ErrorType.AssertionError;
     return `<option>${capitalizeString(member.name.getValue())}</option>`;
   });
   return `
@@ -1406,10 +1370,8 @@ export function mergeMemberHTML() {
   const nameSelect: string[] = [];
   const nameCheckbox: string[] = [];
   getMembers().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).forEach(member => {
-    if (!member.name) throw ErrorType.AssertionError;
     nameSelect.push(`<option>${capitalizeString(member.name.getValue())}</option>`);
     nameCheckbox.push(`<input type="checkbox" class="name" value="${capitalizeString(member.name.toString())}"/> ${capitalizeString(member.name.toString())}\n`);
   });
@@ -1467,10 +1429,8 @@ export function mergePaymentTypeHTML() {
   const nameSelect: string[] = [];
   const nameCheckbox: string[] = [];
   getPaymentTypes().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).forEach(payType => {
-    if (!payType.name) throw ErrorType.AssertionError;
     nameSelect.push(`<option>${capitalizeString(payType.name.getValue())}</option>`);
     nameCheckbox.push(`<input type="checkbox" class="name" value="${capitalizeString(payType.name.toString())}"/> ${capitalizeString(payType.name.toString())}\n`);
   });
@@ -1528,10 +1488,8 @@ export function mergeRecipientHTML() {
   const nameSelect: string[] = [];
   const nameCheckbox: string[] = [];
   getRecipients().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).forEach(recipient => {
-    if (!recipient.name) throw ErrorType.AssertionError;
     nameSelect.push(`<option>${capitalizeString(recipient.name.getValue())}</option>`);
     nameCheckbox.push(`<input type="checkbox" class="name" value="${capitalizeString(recipient.name.toString())}"/> ${capitalizeString(recipient.name.toString())}\n`);
   });
@@ -1588,14 +1546,12 @@ export function mergeRecipientHTML() {
 export function deleteMemberHTML() {
   const memberNames = getMembers()
     .sort((a, b) => {
-      if (!a.name || !b.name) throw ErrorType.AssertionError;
       return a.name.getValue().localeCompare(b.name.getValue());
     })
     .filter(member => {
       return member.active && !member.active.getValue();
     })
     .map(member => {
-      if (!member.name) throw ErrorType.AssertionError;
       return `<option>${capitalizeString(member.name.getValue())}</option>`;
     });
   return `
@@ -1673,10 +1629,8 @@ export function pollNotificationHTML() {
 export function notifyMembersHTML() {
   const members: string[] = [];
   getMembers().sort((a, b) => {
-    if (!a.name || !b.name) throw ErrorType.AssertionError;
     return a.name.getValue().localeCompare(b.name.getValue());
   }).forEach(member => {
-    if (!member.name || !member.email) throw ErrorType.AssertionError;
     if (member.email.getValue()) {
       members.push(`<input type="checkbox" class="memberName" value="${capitalizeString(member.name.toString())}"/> ${capitalizeString(member.name.toString())}\n`);
     }

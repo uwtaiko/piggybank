@@ -520,8 +520,7 @@ export function mergeMember(aliases: string, name: string, sheetId?: string, toa
         memIds: []
     };
     getAttendances(sheetId).forEach(attendance => {
-        if (!attendance.id || !attendance.member_ids) throw ErrorType.AssertionError;
-        const curIds = attendance.member_ids.getValue().map(n => n.getValue());
+        const curIds = attendance.memberIds.getValue().map(n => n.getValue());
         const prunedIds = curIds.filter(id => aliasIds.indexOf(id) === -1);
         if (prunedIds.length < curIds.length) {
             if (prunedIds.indexOf(newId.getValue()) === -1) {
@@ -581,14 +580,12 @@ export function mergePaymentType(aliases: string, name: string, sheetId?: string
 
     const incomeIds: IntData[] = [];
     getIncomes(sheetId).forEach(income => {
-        if (!income.id || !income.paymentTypeId) throw ErrorType.AssertionError;
         if (aliasIds.indexOf(income.paymentTypeId.getValue()) !== -1) {
             incomeIds.push(income.id);
         }
     });
     const expenseIds: IntData[] = [];
     getExpenses(sheetId).forEach(expense => {
-        if (!expense.id || !expense.paymentTypeId) throw ErrorType.AssertionError;
         if (aliasIds.indexOf(expense.paymentTypeId.getValue()) !== -1) {
             expenseIds.push(expense.id);
         }
@@ -645,7 +642,6 @@ export function mergeRecipient(aliases: string, name: string, sheetId?: string, 
 
     const expenseIds: IntData[] = [];
     getExpenses(sheetId).forEach(expense => {
-        if (!expense.id || !expense.recipientId) throw ErrorType.AssertionError;
         if (aliasIds.indexOf(expense.recipientId.getValue()) !== -1) {
             expenseIds.push(expense.id);
         }
@@ -687,8 +683,7 @@ export function menuDeleteMember(name: string, sheetId?: string, toastMsg?: bool
         const newAttnMems: IntListData[] = [];
 
         attns.forEach(entry => {
-            if (!entry.member_ids || !entry.id) throw ErrorType.AssertionError;
-            const membersPresent = entry.member_ids.getValue().map(x => x.getValue());
+            const membersPresent = entry.memberIds.getValue().map(x => x.getValue());
             let curMatch = membersPresent.indexOf(id);
             let flag = false;
             while (curMatch !== -1) {

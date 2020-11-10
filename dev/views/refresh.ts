@@ -23,7 +23,6 @@ export function refreshAccountInfo() {
 
     const unconfirmedList: number[] = [];
     getStatements().forEach(entry => {
-        if (!entry.id || !entry.confirmed) throw ErrorType.AssertionError;
         if (!entry.confirmed.getValue()) unconfirmedList.push(entry.id.getValue());
     });
 
@@ -44,8 +43,6 @@ export function refreshAccountInfo() {
     let onHand = 0;
 
     getIncomes().forEach(income => {
-        if (!income.amount || !income.paymentTypeId || !income.statementId) throw ErrorType.AssertionError;
-
         total += income.amount.getValue();
         if (income.statementId.getValue() === -1) {
             if (income.paymentTypeId.getValue() === venmoId) {
@@ -60,8 +57,6 @@ export function refreshAccountInfo() {
         }
     });
     getExpenses().forEach(expense => {
-        if (!expense.amount || !expense.paymentTypeId || !expense.statementId) throw ErrorType.AssertionError;
-
         total -= expense.amount.getValue();
         if (expense.statementId.getValue() === -1) {
             if (expense.paymentTypeId.getValue() === venmoId) {
@@ -107,13 +102,6 @@ export function refreshMembers() {
     const abcMembers = getMembers()
         .filter(member => member.active && member.active.getValue())
         .sort((a, b) => {
-            if (
-                !a.dateJoined || !a.name || !a.active ||
-                !b.dateJoined || !b.name || !b.active
-            ) {
-                throw ErrorType.AssertionError;
-            }
-
             if (a.active.getValue() !== b.active.getValue()) {
                 if (a.active.getValue()) {
                     return -1;
@@ -138,13 +126,12 @@ export function refreshMembers() {
     // Unique numbers to represent each day of the year are made using upper
     // bounds for the number of days in a month(50 > 31) and in a year(1000 > 50 * 12).
     getAttendances().forEach(entry => {
-        if (!entry.date || !entry.member_ids || !entry.quarter_id) throw ErrorType.AssertionError;
         const curDate = entry.date.getValue();
         const dateNum = curDate.getFullYear() * 1000 +
             curDate.getMonth() * 50 +
             curDate.getDate();
-        if (entry.quarter_id.getValue() === clubInfo.currentQuarterId.getValue()) {
-            entry.member_ids.getValue().forEach(memberId => {
+        if (entry.quarterId.getValue() === clubInfo.currentQuarterId.getValue()) {
+            entry.memberIds.getValue().forEach(memberId => {
                 let curSet = memAttendance[memberId.getValue()];
                 if (!curSet) {
                     curSet = new UniqueList<number>();
@@ -161,15 +148,6 @@ export function refreshMembers() {
     const breakLineNums: number[] = [];
     let prevYear = NaN;
     abcMembers.forEach((member, i) => {
-        if (
-            !member.id ||
-            !member.name ||
-            !member.dateJoined ||
-            !member.amountOwed ||
-            !member.currentDuesPaid ||
-            !member.active
-        ) throw ErrorType.AssertionError;
-
         const attnsSet = memAttendance[member.id.getValue()];
         const numAttns = attnsSet ? attnsSet.size() : 0;
 
@@ -226,7 +204,6 @@ export function refreshIncomes() {
 
     const idToPayType: Dictionary<number, string> = {};
     getPaymentTypes().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToPayType[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
@@ -236,14 +213,6 @@ export function refreshIncomes() {
     const tableFormats: string[][] = [];
     const tableColors: string[][] = [];
     incomes.forEach((income, i) => {
-        if (
-            !income.date ||
-            !income.amount ||
-            !income.description ||
-            !income.paymentTypeId ||
-            !income.statementId
-        ) throw ErrorType.AssertionError;
-
         const payType = idToPayType[income.paymentTypeId.getValue()];
         if (payType === undefined) throw ErrorType.AssertionError;
         const inAccount = income.statementId.getValue() !== -1;
@@ -285,13 +254,11 @@ export function refreshExpenses() {
 
     const idToPayType: Dictionary<number, string> = {};
     getPaymentTypes().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToPayType[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
     const idToRecipient: Dictionary<number, string> = {};
     getRecipients().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToRecipient[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
@@ -301,15 +268,6 @@ export function refreshExpenses() {
     const tableFormats: string[][] = [];
     const tableColors: string[][] = [];
     expenses.forEach((expense, i) => {
-        if (
-            !expense.date ||
-            !expense.amount ||
-            !expense.description ||
-            !expense.paymentTypeId ||
-            !expense.recipientId ||
-            !expense.statementId
-        ) throw ErrorType.AssertionError;
-
         const payType = idToPayType[expense.paymentTypeId.getValue()];
         const recipient = idToRecipient[expense.recipientId.getValue()];
         if (payType === undefined || recipient === undefined) throw ErrorType.AssertionError;
@@ -356,13 +314,11 @@ export function refreshAllTransactions() {
 
     const idToPayType: Dictionary<number, string> = {};
     getPaymentTypes().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToPayType[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
     const idToRecipient: Dictionary<number, string> = {};
     getRecipients().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToRecipient[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
@@ -380,8 +336,6 @@ export function refreshAllTransactions() {
         if (inc_i < incomes.length && exp_i < expenses.length) {
             const incDate = incomes[inc_i].date;
             const expDate = expenses[exp_i].date;
-            if (!incDate) throw ErrorType.AssertionError;
-            if (!expDate) throw ErrorType.AssertionError;
             if (incDate.getValue() > expDate.getValue()) {
                 // add Income
                 const curDate = incomes[inc_i].date;
@@ -389,13 +343,6 @@ export function refreshAllTransactions() {
                 const curDesc = incomes[inc_i].description;
                 const curPayId = incomes[inc_i].paymentTypeId;
                 const curStateId = incomes[inc_i].statementId;
-                if (
-                    !curDate ||
-                    !curAmount ||
-                    !curDesc ||
-                    !curPayId ||
-                    !curStateId
-                ) throw ErrorType.AssertionError;
 
                 const payType = idToPayType[curPayId.getValue()];
                 if (payType === undefined) throw ErrorType.AssertionError;
@@ -418,14 +365,6 @@ export function refreshAllTransactions() {
                 const curPayId = expenses[exp_i].paymentTypeId;
                 const curRecip = expenses[exp_i].recipientId;
                 const curStateId = expenses[exp_i].statementId;
-                if (
-                    !curDate ||
-                    !curAmount ||
-                    !curDesc ||
-                    !curPayId ||
-                    !curRecip ||
-                    !curStateId
-                ) throw ErrorType.AssertionError;
 
                 const payType = idToPayType[curPayId.getValue()];
                 const recipient = idToRecipient[curRecip.getValue()];
@@ -449,13 +388,6 @@ export function refreshAllTransactions() {
             const curDesc = incomes[inc_i].description;
             const curPayId = incomes[inc_i].paymentTypeId;
             const curStateId = incomes[inc_i].statementId;
-            if (
-                !curDate ||
-                !curAmount ||
-                !curDesc ||
-                !curPayId ||
-                !curStateId
-            ) throw ErrorType.AssertionError;
 
             const payType = idToPayType[curPayId.getValue()];
             if (payType === undefined) throw ErrorType.AssertionError;
@@ -478,14 +410,6 @@ export function refreshAllTransactions() {
             const curPayId = expenses[exp_i].paymentTypeId;
             const curRecip = expenses[exp_i].recipientId;
             const curStateId = expenses[exp_i].statementId;
-            if (
-                !curDate ||
-                !curAmount ||
-                !curDesc ||
-                !curPayId ||
-                !curRecip ||
-                !curStateId
-            ) throw ErrorType.AssertionError;
 
             const payType = idToPayType[curPayId.getValue()];
             const recipient = idToRecipient[curRecip.getValue()];
@@ -533,7 +457,6 @@ export function refreshStatements() {
 
     const statementDetails: Dictionary<number, { amount: number, payType: number }> = {};
     getIncomes().forEach(income => {
-        if (!income.amount || !income.paymentTypeId || !income.statementId) throw ErrorType.AssertionError;
         if (income.statementId.getValue() !== -1) {
             let curDetails = statementDetails[income.statementId.getValue()];
             if (!curDetails) {
@@ -547,7 +470,6 @@ export function refreshStatements() {
         }
     });
     getExpenses().forEach(expense => {
-        if (!expense.amount || !expense.paymentTypeId || !expense.statementId) throw ErrorType.AssertionError;
         if (expense.statementId.getValue() !== -1) {
             let curDetails = statementDetails[expense.statementId.getValue()];
             if (!curDetails) {
@@ -563,7 +485,6 @@ export function refreshStatements() {
 
     const idToPayType: Dictionary<number, string> = {};
     getPaymentTypes().forEach(entry => {
-        if (!entry.id || !entry.name) throw ErrorType.AssertionError;
         idToPayType[entry.id.getValue()] = capitalizeString(entry.name.getValue());
     });
 
@@ -573,12 +494,6 @@ export function refreshStatements() {
     const tableFormats: string[][] = [];
     const tableColors: string[][] = [];
     statements.forEach((statement, i) => {
-        if (
-            !statement.id ||
-            !statement.date ||
-            !statement.confirmed
-        ) throw ErrorType.AssertionError;
-
         let curDetails = statementDetails[statement.id.getValue()];
         if (!curDetails) {
             curDetails = {
