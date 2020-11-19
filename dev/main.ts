@@ -36,6 +36,7 @@ export function initializeAll() {
     refreshAll();
 }
 export function resetAll() {
+    createBackup();
     resetTables();
     resetViews();
 }
